@@ -115,6 +115,13 @@
   .add-exo-btn{background:none; color:var(--rouge); font-weight:600; font-size:0.88rem; padding:8px 0;}
 
   .modal-actions{display:flex; justify-content:flex-end; gap:12px; margin-top:26px;}
+
+  .copy-athlete-item{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--border); margin-bottom:8px; cursor:pointer;}
+  .copy-athlete-item:hover{border-color:var(--pierre);}
+  .copy-athlete-item input{width:16px; height:16px; flex-shrink:0; cursor:pointer;}
+  .copy-athlete-item .name{font-weight:600; font-size:0.92rem; color:var(--noir);}
+  .copy-athlete-item .sub{font-size:0.78rem; color:var(--pierre); margin-top:2px;}
+  .copy-empty{color:var(--pierre); font-size:0.88rem; padding:10px 0;}
 </style>
 </head>
 <body>
@@ -209,6 +216,19 @@
     <div class="modal-actions">
       <button class="btn btn-outline" id="seanceCancel">Annuler</button>
       <button class="btn btn-rouge" id="seanceSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COPIER SEANCE -->
+<div class="overlay hidden" id="copyModal">
+  <div class="modal">
+    <h3>Copier la séance vers…</h3>
+    <p style="color:var(--pierre); font-size:0.88rem; margin-bottom:18px;">Sélectionne un ou plusieurs athlètes qui recevront une copie de cette séance.</p>
+    <div id="copyAthleteList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="copyCancel">Annuler</button>
+      <button class="btn btn-rouge" id="copyConfirm">Copier</button>
     </div>
   </div>
 </div>
@@ -411,12 +431,14 @@ function renderSeanceList(profile){
         </div>
         <div class="row-actions">
           <button class="btn-text edit-sc">Modifier</button>
+          <button class="btn-text copy-sc">Copier vers…</button>
           <button class="btn-text del-sc">Supprimer</button>
         </div>
       </div>
     `;
     row.querySelector('.seance-row-head').addEventListener('click', () => row.classList.toggle('open'));
     row.querySelector('.edit-sc').addEventListener('click', (e) => { e.stopPropagation(); openSeanceModal(s.id); });
+    row.querySelector('.copy-sc').addEventListener('click', (e) => { e.stopPropagation(); openCopyModal(s.id); });
     row.querySelector('.del-sc').addEventListener('click', (e) => {
       e.stopPropagation();
       if(confirm('Supprimer cette séance ?')){
@@ -554,6 +576,56 @@ document.getElementById('seanceSave').addEventListener('click', () => {
     profile.seances.push({id:uid('s'), titre, date, heure, type, objectif, exercices});
   }
   document.getElementById('seanceModal').classList.add('hidden');
+  renderAll();
+  saveData();
+});
+
+// ===================== MODAL COPIER SEANCE =====================
+let copyingSeanceId = null;
+const copySelected = new Set();
+
+function openCopyModal(seanceId){
+  copyingSeanceId = seanceId;
+  copySelected.clear();
+  const listEl = document.getElementById('copyAthleteList');
+  const others = profiles.filter(p => p.id !== currentProfileId);
+  if(others.length === 0){
+    listEl.innerHTML = '<div class="copy-empty">Aucun autre athlète disponible. Ajoutes-en un depuis la colonne de gauche.</div>';
+  } else {
+    listEl.innerHTML = '';
+    others.forEach(p => {
+      const item = document.createElement('label');
+      item.className = 'copy-athlete-item';
+      item.innerHTML = `
+        <input type="checkbox" value="${p.id}">
+        <div>
+          <div class="name">${p.nom}</div>
+          <div class="sub">${p.poste} · ${p.groupe}</div>
+        </div>`;
+      const checkbox = item.querySelector('input');
+      checkbox.addEventListener('change', () => {
+        if(checkbox.checked) copySelected.add(p.id);
+        else copySelected.delete(p.id);
+      });
+      listEl.appendChild(item);
+    });
+  }
+  document.getElementById('copyModal').classList.remove('hidden');
+}
+document.getElementById('copyCancel').addEventListener('click', () => document.getElementById('copyModal').classList.add('hidden'));
+document.getElementById('copyConfirm').addEventListener('click', () => {
+  if(copySelected.size === 0){ alert('Sélectionne au moins un athlète.'); return; }
+  const source = currentProfile();
+  const seance = source.seances.find(x => x.id === copyingSeanceId);
+  if(!seance){ document.getElementById('copyModal').classList.add('hidden'); return; }
+  copySelected.forEach(targetId => {
+    const target = profiles.find(p => p.id === targetId);
+    if(!target) return;
+    const copy = JSON.parse(JSON.stringify(seance));
+    copy.id = uid('s');
+    target.seances.push(copy);
+  });
+  document.getElementById('copyModal').classList.add('hidden');
   renderAll();
   saveData();
 });
