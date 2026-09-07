@@ -81,7 +81,7 @@
   .seance-detail .objectif{color:var(--texte); font-size:0.9rem; margin:14px 0; padding:12px 16px; background:var(--blanc-2); border-left:3px solid var(--rouge);}
   .exo-mini{display:flex; gap:12px; padding:8px 0; border-bottom:1px solid var(--blanc-2); font-size:0.87rem;}
   .exo-mini:last-of-type{border-bottom:none;}
-  .exo-mini .n{font-family:'Archivo Expanded'; color:var(--rouge); font-weight:700; width:20px; flex-shrink:0;}
+  .exo-mini .n{font-family:'Archivo Expanded'; color:var(--rouge); font-weight:700; width:28px; flex-shrink:0;}
   .exo-mini .nom{width:170px; flex-shrink:0; font-weight:600;}
   .exo-mini .vol{width:110px; flex-shrink:0; color:var(--pierre);}
   .exo-mini .cons{color:var(--pierre);}
@@ -103,9 +103,15 @@
   .field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
 
   .exo-editor-row{border:1px solid var(--border); padding:14px; margin-bottom:10px; position:relative;}
+  .exo-editor-row.is-superset{border-left:3px solid var(--rouge); margin-top:-1px;}
   .exo-editor-row .field-row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
   .exo-editor-row .remove-exo{position:absolute; top:8px; right:8px; color:var(--pierre); font-size:0.85rem; background:none; padding:4px 8px;}
   .exo-editor-row .remove-exo:hover{color:var(--rouge);}
+  .exo-editor-head{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .exo-order-badge{background:var(--rouge); color:var(--blanc); font-family:'Archivo Expanded'; font-weight:700; font-size:0.82rem; padding:3px 9px; border-radius:var(--radius); flex-shrink:0;}
+  .superset-toggle{display:flex; align-items:center; gap:6px; font-size:0.83rem; color:var(--pierre); cursor:pointer;}
+  .superset-toggle input{width:14px; height:14px; cursor:pointer;}
+  .superset-toggle.disabled{opacity:0.4; pointer-events:none;}
   .add-exo-btn{background:none; color:var(--rouge); font-weight:600; font-size:0.88rem; padding:8px 0;}
 
   .modal-actions{display:flex; justify-content:flex-end; gap:12px; margin-top:26px;}
@@ -237,6 +243,28 @@ let editingSeanceId = null;
 let exoDraft = [];
 
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+// Calcule les étiquettes d'ordre (A, B, C… ou A1/A2 si superset) pour une liste d'exercices
+function computeExoLabels(list){
+  const groups = [];
+  list.forEach(ex => {
+    if(ex.superset && groups.length > 0){
+      groups[groups.length - 1].push(ex);
+    } else {
+      groups.push([ex]);
+    }
+  });
+  const labels = [];
+  groups.forEach((group, gi) => {
+    const letter = String.fromCharCode(65 + gi);
+    if(group.length === 1){
+      labels.push(letter);
+    } else {
+      group.forEach((_, si) => labels.push(letter + (si + 1)));
+    }
+  });
+  return labels;
+}
 function currentProfile(){ return profiles.find(p => p.id === currentProfileId); }
 function fmtDate(iso){ const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'short'}); }
 function typeLabel(t){ return {Musculation:'Musculation', Terrain:'Terrain', Recuperation:'Récupération', Video:'Vidéo'}[t] || t; }
@@ -325,13 +353,16 @@ function renderSeanceList(profile){
       <div class="seance-detail">
         <div class="objectif">${s.objectif || 'Aucun objectif renseigné.'}</div>
         <div class="exo-list">
-          ${s.exercices.map((ex,i) => `
+          ${(() => {
+            const labels = computeExoLabels(s.exercices);
+            return s.exercices.map((ex,i) => `
             <div class="exo-mini">
-              <span class="n">${String(i+1).padStart(2,'0')}</span>
+              <span class="n">${labels[i]}</span>
               <span class="nom">${ex.nom}</span>
               <span class="vol">${ex.volume}</span>
               <span class="cons">${ex.consigne}</span>
-            </div>`).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>'}
+            </div>`).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>';
+          })()}
         </div>
         <div class="row-actions">
           <button class="btn-text edit-sc">Modifier</button>
@@ -411,7 +442,7 @@ function openSeanceModal(id){
     document.getElementById('scHeure').value = '18:00';
     document.getElementById('scType').value = 'Terrain';
     document.getElementById('scObjectif').value = '';
-    exoDraft = [{nom:'', volume:'', consigne:''}];
+    exoDraft = [{nom:'', volume:'', consigne:'', superset:false}];
   }
   renderExoEditor();
   modal.classList.remove('hidden');
@@ -421,26 +452,41 @@ document.getElementById('seanceCancel').addEventListener('click', () => document
 function renderExoEditor(){
   const container = document.getElementById('exoEditorList');
   container.innerHTML = '';
+  const labels = computeExoLabels(exoDraft);
   exoDraft.forEach((ex, i) => {
     const row = document.createElement('div');
-    row.className = 'exo-editor-row';
+    row.className = 'exo-editor-row' + (ex.superset ? ' is-superset' : '');
     row.innerHTML = `
       ${exoDraft.length > 1 ? '<button class="remove-exo" type="button">✕</button>' : ''}
+      <div class="exo-editor-head">
+        <span class="exo-order-badge">${labels[i]}</span>
+        <label class="superset-toggle${i === 0 ? ' disabled' : ''}">
+          <input type="checkbox" data-superset ${ex.superset ? 'checked' : ''} ${i === 0 ? 'disabled' : ''}>
+          Superset avec l'exercice précédent
+        </label>
+      </div>
       <div class="field-row3">
         <div class="field" style="margin-bottom:0;"><label>Exercice</label><input type="text" value="${ex.nom}" data-k="nom" placeholder="Ex. Squat arrière"></div>
         <div class="field" style="margin-bottom:0;"><label>Volume</label><input type="text" value="${ex.volume}" data-k="volume" placeholder="Ex. 4 x 8"></div>
         <div class="field" style="margin-bottom:0;"><label>Consigne</label><input type="text" value="${ex.consigne}" data-k="consigne" placeholder="Ex. Contrôle en descente"></div>
       </div>`;
-    row.querySelectorAll('input').forEach(inp => {
+    row.querySelectorAll('input[data-k]').forEach(inp => {
       inp.addEventListener('input', () => { exoDraft[i][inp.dataset.k] = inp.value; });
     });
+    const supersetInp = row.querySelector('input[data-superset]');
+    if(supersetInp){
+      supersetInp.addEventListener('change', () => {
+        exoDraft[i].superset = supersetInp.checked;
+        renderExoEditor();
+      });
+    }
     const removeBtn = row.querySelector('.remove-exo');
     if(removeBtn) removeBtn.addEventListener('click', () => { exoDraft.splice(i,1); renderExoEditor(); });
     container.appendChild(row);
   });
 }
 document.getElementById('addExoBtn').addEventListener('click', () => {
-  exoDraft.push({nom:'', volume:'', consigne:''});
+  exoDraft.push({nom:'', volume:'', consigne:'', superset:false});
   renderExoEditor();
 });
 
