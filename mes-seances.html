@@ -92,6 +92,13 @@
   .cal-cell.selected .cal-dot.dot-Terrain{background:var(--blanc);}
   .cal-dot.dot-Recuperation{background:var(--or);}
   .cal-dot.dot-Video{background:var(--pierre);}
+
+  /* PAGE JOUR */
+  .back-link{display:inline-flex; align-items:center; gap:6px; color:var(--pierre); font-size:0.88rem; font-weight:600; margin-bottom:20px;}
+  .back-link:active{color:var(--rouge);}
+  .day-view-head{margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid var(--noir);}
+  .day-view-head h2{font-size:1.25rem; color:var(--noir); text-transform:capitalize;}
+  .day-view-head .sub{font-size:0.82rem; color:var(--pierre); margin-top:3px;}
 </style>
 </head>
 <body>
@@ -265,7 +272,6 @@ function renderCalendarView(p){
     </div>
     <div class="cal-weekdays"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
     <div class="cal-grid">${cellsHtml}</div>
-    <div id="calDayDetail" style="margin-top:22px;"></div>
   `;
 
   document.getElementById('calPrev').addEventListener('click', () => {
@@ -278,28 +284,33 @@ function renderCalendarView(p){
   });
   container.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
     cell.addEventListener('click', () => {
-      selectedDate = cell.dataset.date === selectedDate ? null : cell.dataset.date;
-      renderCalendarView(p);
+      selectedDate = cell.dataset.date;
+      renderDayView(p, cell.dataset.date);
     });
   });
+}
 
-  const detail = document.getElementById('calDayDetail');
-  if(selectedDate){
-    const daySeances = (seancesByDate[selectedDate] || []).sort((a,b) => a.heure.localeCompare(b.heure));
-    if(daySeances.length === 0){
-      detail.innerHTML = '<div class="empty-state">Aucune séance ce jour-là.</div>';
-    } else {
-      const heading = document.createElement('div');
-      heading.style.cssText = 'font-weight:700; color:var(--noir); font-size:0.92rem; margin-bottom:10px; text-transform:capitalize;';
-      heading.textContent = new Date(selectedDate+'T00:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long'});
-      detail.appendChild(heading);
-      const list = document.createElement('div');
-      list.className = 'seance-list';
-      daySeances.forEach(s => list.appendChild(buildSeanceCard(s)));
-      detail.appendChild(list);
-    }
+function renderDayView(p, dateStr){
+  const main = document.getElementById('mainArea');
+  const daySeances = (p.seances || []).filter(s => s.date === dateStr).sort((a,b) => a.heure.localeCompare(b.heure));
+  const dayLabel = new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long'});
+
+  main.innerHTML = `
+    <a class="back-link" id="backToCal">&larr; Retour au calendrier</a>
+    <div class="day-view-head">
+      <h2>${dayLabel}</h2>
+      <div class="sub">${p.nom}</div>
+    </div>
+    <div id="dayList"></div>
+  `;
+  document.getElementById('backToCal').addEventListener('click', () => renderProfile());
+
+  const listEl = document.getElementById('dayList');
+  if(daySeances.length === 0){
+    listEl.innerHTML = '<div class="empty-state">Aucune séance ce jour-là.</div>';
   } else {
-    detail.innerHTML = '<div class="empty-state">Touche un jour avec un point pour voir la séance.</div>';
+    listEl.className = 'seance-list';
+    daySeances.forEach(s => listEl.appendChild(buildSeanceCard(s)));
   }
 }
 
