@@ -70,6 +70,28 @@
   .exo-mini .cons{color:var(--pierre); font-size:0.82rem; margin-top:2px;}
   .empty-state{padding:40px 16px; text-align:center; color:var(--pierre); font-size:0.9rem;}
   .loading-state{padding:60px 16px; text-align:center; color:var(--pierre);}
+
+  /* CALENDRIER */
+  .cal-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .cal-month-label{font-weight:700; font-size:1rem; color:var(--noir); text-transform:capitalize;}
+  .cal-nav-btn{background:none; border:1px solid var(--border); width:34px; height:34px; font-size:1.1rem; color:var(--noir); border-radius:var(--radius);}
+  .cal-nav-btn:active{border-color:var(--rouge); color:var(--rouge);}
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px;}
+  .cal-weekdays span{text-align:center; font-size:0.7rem; color:var(--pierre); font-weight:600;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-cell{aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.85rem; border:1px solid var(--border); color:var(--texte);}
+  .cal-cell.empty{border:none;}
+  .cal-cell.today{border-color:var(--noir); border-width:1.5px; font-weight:700;}
+  .cal-cell.has-seance{cursor:pointer; background:var(--blanc);}
+  .cal-cell.selected{background:var(--rouge); border-color:var(--rouge); color:var(--blanc);}
+  .cal-dots{display:flex; gap:2px; height:6px;}
+  .cal-dot{width:5px; height:5px; border-radius:50%;}
+  .cal-dot.dot-Musculation{background:var(--rouge);}
+  .cal-cell.selected .cal-dot.dot-Musculation{background:var(--blanc);}
+  .cal-dot.dot-Terrain{background:var(--noir);}
+  .cal-cell.selected .cal-dot.dot-Terrain{background:var(--blanc);}
+  .cal-dot.dot-Recuperation{background:var(--or);}
+  .cal-dot.dot-Video{background:var(--pierre);}
 </style>
 </head>
 <body>
@@ -165,18 +187,49 @@ function renderProfile(){
     <div class="tabs">
       <button data-tab="a_venir" class="${currentTab === 'a_venir' ? 'active' : ''}">À venir</button>
       <button data-tab="faite" class="${currentTab === 'faite' ? 'active' : ''}">Passées</button>
+      <button data-tab="calendrier" class="${currentTab === 'calendrier' ? 'active' : ''}">Calendrier</button>
     </div>
-    <div class="seance-list" id="seanceList"></div>
+    <div id="seanceList"></div>
   `;
   document.getElementById('changeBtn').addEventListener('click', () => { currentAthleteId = null; renderPicker(); });
   main.querySelectorAll('.tabs button').forEach(btn => {
     btn.addEventListener('click', () => { currentTab = btn.dataset.tab; renderProfile(); });
   });
-  renderSeanceList(p);
+  if(currentTab === 'calendrier'){ renderCalendarView(p); }
+  else { renderSeanceList(p); }
+}
+
+function buildSeanceCard(s){
+  const labels = computeExoLabels(s.exercices || []);
+  const card = document.createElement('div');
+  card.className = 'seance-card';
+  card.innerHTML = `
+    <div class="seance-bar bar-${s.type}"></div>
+    <div class="seance-card-body">
+      <div class="seance-card-head">
+        <div>
+          <div class="titre">${s.titre}</div>
+          <div class="meta-line">${fmtDate(s.date)} · ${s.heure}</div>
+        </div>
+        <span class="type-chip">${typeLabel(s.type)}</span>
+      </div>
+      <div class="seance-detail">
+        <div class="objectif">${s.objectif || 'Aucun objectif renseigné.'}</div>
+        ${(s.exercices || []).map((ex,i) => `
+          <div class="exo-mini">
+            <div><span class="label">${labels[i]}</span><span class="nom">${ex.nom}</span><span class="vol">${ex.volume}</span></div>
+            ${ex.consigne ? `<div class="cons">${ex.consigne}</div>` : ''}
+          </div>`).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>'}
+      </div>
+    </div>
+  `;
+  card.querySelector('.seance-card-head').addEventListener('click', () => card.classList.toggle('open'));
+  return card;
 }
 
 function renderSeanceList(p){
   const container = document.getElementById('seanceList');
+  container.className = 'seance-list';
   const todayStr = new Date().toISOString().slice(0,10);
   const list = (p.seances || []).filter(s => currentTab === 'a_venir' ? s.date >= todayStr : s.date < todayStr)
     .sort((a,b) => currentTab === 'a_venir' ? (a.date+a.heure).localeCompare(b.date+b.heure) : (b.date+b.heure).localeCompare(a.date+a.heure));
@@ -185,33 +238,88 @@ function renderSeanceList(p){
     return;
   }
   container.innerHTML = '';
-  list.forEach(s => {
-    const labels = computeExoLabels(s.exercices || []);
-    const card = document.createElement('div');
-    card.className = 'seance-card';
-    card.innerHTML = `
-      <div class="seance-bar bar-${s.type}"></div>
-      <div class="seance-card-body">
-        <div class="seance-card-head">
-          <div>
-            <div class="titre">${s.titre}</div>
-            <div class="meta-line">${fmtDate(s.date)} · ${s.heure}</div>
-          </div>
-          <span class="type-chip">${typeLabel(s.type)}</span>
-        </div>
-        <div class="seance-detail">
-          <div class="objectif">${s.objectif || 'Aucun objectif renseigné.'}</div>
-          ${(s.exercices || []).map((ex,i) => `
-            <div class="exo-mini">
-              <div><span class="label">${labels[i]}</span><span class="nom">${ex.nom}</span><span class="vol">${ex.volume}</span></div>
-              ${ex.consigne ? `<div class="cons">${ex.consigne}</div>` : ''}
-            </div>`).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>'}
-        </div>
-      </div>
-    `;
-    card.querySelector('.seance-card-head').addEventListener('click', () => card.classList.toggle('open'));
-    container.appendChild(card);
+  list.forEach(s => container.appendChild(buildSeanceCard(s)));
+}
+
+// ===================== CALENDRIER =====================
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedDate = null;
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function renderCalendarView(p){
+  const container = document.getElementById('seanceList');
+  container.className = '';
+  const todayStr = new Date().toISOString().slice(0,10);
+  const seancesByDate = {};
+  (p.seances || []).forEach(s => { (seancesByDate[s.date] = seancesByDate[s.date] || []).push(s); });
+
+  const monthLabel = new Date(calYear, calMonth, 1).toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+  const firstWeekday = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  let cellsHtml = '';
+  for(let i = 0; i < firstWeekday; i++){ cellsHtml += '<div class="cal-cell empty"></div>'; }
+  for(let d = 1; d <= daysInMonth; d++){
+    const dateStr = `${calYear}-${pad2(calMonth+1)}-${pad2(d)}`;
+    const daySeances = seancesByDate[dateStr] || [];
+    const types = [...new Set(daySeances.map(s => s.type))];
+    const classes = ['cal-cell'];
+    if(dateStr === todayStr) classes.push('today');
+    if(dateStr === selectedDate) classes.push('selected');
+    if(daySeances.length > 0) classes.push('has-seance');
+    cellsHtml += `
+      <div class="${classes.join(' ')}" data-date="${dateStr}">
+        <span>${d}</span>
+        <div class="cal-dots">${types.map(t => `<span class="cal-dot dot-${t}"></span>`).join('')}</div>
+      </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="cal-header">
+      <button class="cal-nav-btn" id="calPrev">‹</button>
+      <div class="cal-month-label">${monthLabel}</div>
+      <button class="cal-nav-btn" id="calNext">›</button>
+    </div>
+    <div class="cal-weekdays"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div class="cal-grid">${cellsHtml}</div>
+    <div id="calDayDetail" style="margin-top:22px;"></div>
+  `;
+
+  document.getElementById('calPrev').addEventListener('click', () => {
+    calMonth--; if(calMonth < 0){ calMonth = 11; calYear--; }
+    renderCalendarView(p);
   });
+  document.getElementById('calNext').addEventListener('click', () => {
+    calMonth++; if(calMonth > 11){ calMonth = 0; calYear++; }
+    renderCalendarView(p);
+  });
+  container.querySelectorAll('.cal-cell.has-seance').forEach(cell => {
+    cell.addEventListener('click', () => {
+      selectedDate = cell.dataset.date === selectedDate ? null : cell.dataset.date;
+      renderCalendarView(p);
+    });
+  });
+
+  const detail = document.getElementById('calDayDetail');
+  if(selectedDate){
+    const daySeances = (seancesByDate[selectedDate] || []).sort((a,b) => a.heure.localeCompare(b.heure));
+    if(daySeances.length === 0){
+      detail.innerHTML = '<div class="empty-state">Aucune séance ce jour-là.</div>';
+    } else {
+      const heading = document.createElement('div');
+      heading.style.cssText = 'font-weight:700; color:var(--noir); font-size:0.92rem; margin-bottom:10px; text-transform:capitalize;';
+      heading.textContent = new Date(selectedDate+'T00:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long'});
+      detail.appendChild(heading);
+      const list = document.createElement('div');
+      list.className = 'seance-list';
+      daySeances.forEach(s => list.appendChild(buildSeanceCard(s)));
+      detail.appendChild(list);
+    }
+  } else {
+    detail.innerHTML = '<div class="empty-state">Touche un jour avec un point pour voir la séance.</div>';
+  }
 }
 
 async function init(){
