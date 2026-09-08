@@ -116,7 +116,7 @@ const DATA_ROW_ID = 'nissa_coaching_seances';
 
 let profiles = [];
 let currentAthleteId = null;
-let currentTab = 'a_venir';
+let currentTab = 'calendrier';
 
 async function loadData(){
   const res = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.${DATA_ROW_ID}&select=data`, {
@@ -167,7 +167,7 @@ function renderPicker(){
         <div class="sub">${p.poste} · ${p.groupe}</div>
       </div>
       <span class="arrow">›</span>`;
-    btn.addEventListener('click', () => { currentAthleteId = p.id; currentTab = 'a_venir'; renderProfile(); });
+    btn.addEventListener('click', () => { currentAthleteId = p.id; currentTab = 'calendrier'; renderProfile(); });
     list.appendChild(btn);
   });
 }
@@ -184,19 +184,10 @@ function renderProfile(){
       </div>
       <button class="change-btn" id="changeBtn">Changer</button>
     </div>
-    <div class="tabs">
-      <button data-tab="a_venir" class="${currentTab === 'a_venir' ? 'active' : ''}">À venir</button>
-      <button data-tab="faite" class="${currentTab === 'faite' ? 'active' : ''}">Passées</button>
-      <button data-tab="calendrier" class="${currentTab === 'calendrier' ? 'active' : ''}">Calendrier</button>
-    </div>
     <div id="seanceList"></div>
   `;
   document.getElementById('changeBtn').addEventListener('click', () => { currentAthleteId = null; renderPicker(); });
-  main.querySelectorAll('.tabs button').forEach(btn => {
-    btn.addEventListener('click', () => { currentTab = btn.dataset.tab; renderProfile(); });
-  });
-  if(currentTab === 'calendrier'){ renderCalendarView(p); }
-  else { renderSeanceList(p); }
+  renderCalendarView(p);
 }
 
 function buildSeanceCard(s){
@@ -225,20 +216,6 @@ function buildSeanceCard(s){
   `;
   card.querySelector('.seance-card-head').addEventListener('click', () => card.classList.toggle('open'));
   return card;
-}
-
-function renderSeanceList(p){
-  const container = document.getElementById('seanceList');
-  container.className = 'seance-list';
-  const todayStr = new Date().toISOString().slice(0,10);
-  const list = (p.seances || []).filter(s => currentTab === 'a_venir' ? s.date >= todayStr : s.date < todayStr)
-    .sort((a,b) => currentTab === 'a_venir' ? (a.date+a.heure).localeCompare(b.date+b.heure) : (b.date+b.heure).localeCompare(a.date+a.heure));
-  if(list.length === 0){
-    container.innerHTML = `<div class="empty-state">Aucune séance ${currentTab === 'a_venir' ? 'à venir' : 'passée'}.</div>`;
-    return;
-  }
-  container.innerHTML = '';
-  list.forEach(s => container.appendChild(buildSeanceCard(s)));
 }
 
 // ===================== CALENDRIER =====================
