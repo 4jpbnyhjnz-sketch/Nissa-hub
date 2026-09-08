@@ -79,10 +79,10 @@
   .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px;}
   .cal-weekdays span{text-align:center; font-size:0.7rem; color:var(--pierre); font-weight:600;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
-  .cal-cell{aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.85rem; border:1px solid var(--border); color:var(--texte);}
-  .cal-cell.empty{border:none;}
+  .cal-cell{aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.85rem; border:1px solid var(--border); color:var(--texte); cursor:pointer;}
+  .cal-cell.empty{border:none; cursor:default;}
   .cal-cell.today{border-color:var(--noir); border-width:1.5px; font-weight:700;}
-  .cal-cell.has-seance{cursor:pointer; background:var(--blanc);}
+  .cal-cell.has-seance{background:var(--blanc);}
   .cal-cell.selected{background:var(--rouge); border-color:var(--rouge); color:var(--blanc);}
   .cal-dots{display:flex; gap:2px; height:6px;}
   .cal-dot{width:5px; height:5px; border-radius:50%;}
@@ -167,7 +167,11 @@ function renderPicker(){
         <div class="sub">${p.poste} · ${p.groupe}</div>
       </div>
       <span class="arrow">›</span>`;
-    btn.addEventListener('click', () => { currentAthleteId = p.id; currentTab = 'calendrier'; renderProfile(); });
+    btn.addEventListener('click', () => {
+      currentAthleteId = p.id;
+      selectedDate = null;
+      renderProfile();
+    });
     list.appendChild(btn);
   });
 }
@@ -272,7 +276,7 @@ function renderCalendarView(p){
     calMonth++; if(calMonth > 11){ calMonth = 0; calYear++; }
     renderCalendarView(p);
   });
-  container.querySelectorAll('.cal-cell.has-seance').forEach(cell => {
+  container.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
     cell.addEventListener('click', () => {
       selectedDate = cell.dataset.date === selectedDate ? null : cell.dataset.date;
       renderCalendarView(p);
