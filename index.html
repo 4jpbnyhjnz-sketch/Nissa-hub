@@ -62,6 +62,28 @@
   .no-profile h3{color:var(--noir); font-size:1.2rem; margin-bottom:10px;}
 
   .seance-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .view-tabs{display:flex; gap:0; border-bottom:2px solid var(--blanc-2);}
+  .view-tab-btn{background:none; padding:8px 4px; margin-right:22px; font-size:0.9rem; font-weight:600; color:var(--pierre); border-bottom:2px solid transparent; position:relative; top:2px;}
+  .view-tab-btn.active{color:var(--noir); border-bottom-color:var(--rouge);}
+
+  /* CALENDRIER PAR ATHLETE */
+  .cal-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .cal-month-label{font-weight:700; font-size:1.05rem; color:var(--noir); text-transform:capitalize;}
+  .cal-nav-btn{background:none; border:1px solid var(--border); width:34px; height:34px; font-size:1.1rem; color:var(--noir); border-radius:var(--radius);}
+  .cal-nav-btn:hover{border-color:var(--rouge); color:var(--rouge);}
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px;}
+  .cal-weekdays span{text-align:center; font-size:0.74rem; color:var(--pierre); font-weight:600;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; max-width:520px;}
+  .cal-cell{aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.85rem; border:1px solid var(--border); color:var(--texte); cursor:pointer;}
+  .cal-cell.empty{border:none; cursor:default;}
+  .cal-cell.today{border-color:var(--noir); border-width:1.5px; font-weight:700;}
+  .cal-cell.selected{background:var(--rouge); border-color:var(--rouge); color:var(--blanc);}
+  .cal-dots{display:flex; gap:2px; height:6px;}
+  .cal-dot{width:5px; height:5px; border-radius:50%;}
+  .cal-dot.bar-Musculation{background:var(--rouge);} .cal-cell.selected .cal-dot.bar-Musculation{background:var(--blanc);}
+  .cal-dot.bar-Terrain{background:var(--noir);} .cal-cell.selected .cal-dot.bar-Terrain{background:var(--blanc);}
+  .cal-dot.bar-Recuperation{background:var(--or);}
+  .cal-dot.bar-Video{background:var(--pierre);}
   .seance-toolbar h3{font-size:1rem; color:var(--noir);}
   .seance-count{color:var(--pierre); font-size:0.85rem;}
 
@@ -233,6 +255,28 @@
   </div>
 </div>
 
+<!-- MODAL DUPLIQUER A UNE AUTRE DATE -->
+<div class="overlay hidden" id="duplicateModal">
+  <div class="modal">
+    <h3>Dupliquer à un autre jour</h3>
+    <p style="color:var(--pierre); font-size:0.88rem; margin-bottom:18px;">La séance sera copiée pour le même athlète, à la date choisie.</p>
+    <div class="field-row">
+      <div class="field">
+        <label>Nouvelle date</label>
+        <input type="date" id="dupDate">
+      </div>
+      <div class="field">
+        <label>Heure</label>
+        <input type="time" id="dupHeure">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="dupCancel">Annuler</button>
+      <button class="btn btn-rouge" id="dupConfirm">Dupliquer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===================== CONNEXION BASE DE DONNEES =====================
 const SUPABASE_URL = 'https://wfllyusgbtarbctdcmgo.supabase.co';
@@ -305,6 +349,10 @@ let currentProfileId = profiles[0] ? profiles[0].id : null;
 let editingProfileId = null;
 let editingSeanceId = null;
 let exoDraft = [];
+let profileViewTab = 'liste';
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDate = null;
 
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
@@ -350,7 +398,7 @@ function renderSidebar(){
         <div class="sub">${p.poste} · ${p.groupe}</div>
       </div>
       <button class="del" title="Supprimer">✕</button>`;
-    el.querySelector('.select-zone').addEventListener('click', () => { currentProfileId = p.id; renderAll(); });
+    el.querySelector('.select-zone').addEventListener('click', () => { currentProfileId = p.id; profileViewTab = 'liste'; calSelectedDate = null; renderAll(); });
     el.querySelector('.del').addEventListener('click', (e) => {
       e.stopPropagation();
       if(confirm(`Supprimer ${p.nom} et ses séances ?`)){
@@ -384,25 +432,30 @@ function renderMain(){
       </div>
     </div>
     <div class="seance-toolbar">
-      <h3>Séances programmées</h3>
+      <div class="view-tabs">
+        <button class="view-tab-btn ${profileViewTab === 'liste' ? 'active' : ''}" data-view="liste">Liste</button>
+        <button class="view-tab-btn ${profileViewTab === 'calendrier' ? 'active' : ''}" data-view="calendrier">Calendrier</button>
+      </div>
       <span class="seance-count">${profile.seances.length} séance${profile.seances.length > 1 ? 's' : ''}</span>
     </div>
-    <div class="seance-list" id="seanceList"></div>
+    <div id="seanceList"></div>
   `;
   document.getElementById('editProfileBtn').addEventListener('click', () => openProfileModal(profile.id));
   document.getElementById('newSeanceBtn').addEventListener('click', () => openSeanceModal(null));
-  renderSeanceList(profile);
+  main.querySelectorAll('.view-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => { profileViewTab = btn.dataset.view; renderMain(); });
+  });
+  if(profileViewTab === 'calendrier'){ renderCalendarView(profile); }
+  else { renderSeanceList(profile); }
 }
 
-function renderSeanceList(profile){
-  const container = document.getElementById('seanceList');
-  const sorted = [...profile.seances].sort((a,b) => (a.date+a.heure).localeCompare(b.date+b.heure));
-  if(sorted.length === 0){
-    container.innerHTML = '<div class="empty-state">Aucune séance créée pour cet athlète.</div>';
+function renderSeanceRows(container, list, emptyMsg){
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty-state">${emptyMsg || 'Aucune séance.'}</div>`;
     return;
   }
   container.innerHTML = '';
-  sorted.forEach(s => {
+  list.forEach(s => {
     const row = document.createElement('div');
     row.className = 'seance-row';
     row.innerHTML = `
@@ -431,6 +484,7 @@ function renderSeanceList(profile){
         </div>
         <div class="row-actions">
           <button class="btn-text edit-sc">Modifier</button>
+          <button class="btn-text dup-sc">Dupliquer à un autre jour</button>
           <button class="btn-text copy-sc">Copier vers…</button>
           <button class="btn-text del-sc">Supprimer</button>
         </div>
@@ -438,6 +492,7 @@ function renderSeanceList(profile){
     `;
     row.querySelector('.seance-row-head').addEventListener('click', () => row.classList.toggle('open'));
     row.querySelector('.edit-sc').addEventListener('click', (e) => { e.stopPropagation(); openSeanceModal(s.id); });
+    row.querySelector('.dup-sc').addEventListener('click', (e) => { e.stopPropagation(); openDuplicateModal(s.id); });
     row.querySelector('.copy-sc').addEventListener('click', (e) => { e.stopPropagation(); openCopyModal(s.id); });
     row.querySelector('.del-sc').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -450,6 +505,84 @@ function renderSeanceList(profile){
     });
     container.appendChild(row);
   });
+}
+
+function renderSeanceList(profile){
+  const container = document.getElementById('seanceList');
+  container.className = 'seance-list';
+  const sorted = [...profile.seances].sort((a,b) => (a.date+a.heure).localeCompare(b.date+b.heure));
+  renderSeanceRows(container, sorted, 'Aucune séance créée pour cet athlète.');
+}
+
+// ===================== CALENDRIER PAR ATHLETE =====================
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function renderCalendarView(profile){
+  const container = document.getElementById('seanceList');
+  container.className = '';
+  const todayStr = new Date().toISOString().slice(0,10);
+  const seancesByDate = {};
+  profile.seances.forEach(s => { (seancesByDate[s.date] = seancesByDate[s.date] || []).push(s); });
+
+  const monthLabel = new Date(calYear, calMonth, 1).toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+  const firstWeekday = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  let cellsHtml = '';
+  for(let i = 0; i < firstWeekday; i++){ cellsHtml += '<div class="cal-cell empty"></div>'; }
+  for(let d = 1; d <= daysInMonth; d++){
+    const dateStr = `${calYear}-${pad2(calMonth+1)}-${pad2(d)}`;
+    const daySeances = seancesByDate[dateStr] || [];
+    const types = [...new Set(daySeances.map(s => s.type))];
+    const classes = ['cal-cell'];
+    if(dateStr === todayStr) classes.push('today');
+    if(dateStr === calSelectedDate) classes.push('selected');
+    cellsHtml += `
+      <div class="${classes.join(' ')}" data-date="${dateStr}">
+        <span>${d}</span>
+        <div class="cal-dots">${types.map(t => `<span class="cal-dot bar-${t}"></span>`).join('')}</div>
+      </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="cal-header">
+      <button class="cal-nav-btn" id="calPrev">‹</button>
+      <div class="cal-month-label">${monthLabel}</div>
+      <button class="cal-nav-btn" id="calNext">›</button>
+    </div>
+    <div class="cal-weekdays"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div class="cal-grid">${cellsHtml}</div>
+    <div id="calDayPanel" style="margin-top:24px;"></div>
+  `;
+  document.getElementById('calPrev').addEventListener('click', () => {
+    calMonth--; if(calMonth < 0){ calMonth = 11; calYear--; }
+    renderCalendarView(profile);
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    calMonth++; if(calMonth > 11){ calMonth = 0; calYear++; }
+    renderCalendarView(profile);
+  });
+  container.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      calSelectedDate = cell.dataset.date === calSelectedDate ? null : cell.dataset.date;
+      renderCalendarView(profile);
+    });
+  });
+
+  const panel = document.getElementById('calDayPanel');
+  if(calSelectedDate){
+    const dayList = (seancesByDate[calSelectedDate] || []).sort((a,b) => a.heure.localeCompare(b.heure));
+    const heading = document.createElement('div');
+    heading.style.cssText = 'font-weight:700; color:var(--noir); font-size:0.95rem; margin-bottom:12px; text-transform:capitalize;';
+    heading.textContent = new Date(calSelectedDate+'T00:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long'});
+    panel.appendChild(heading);
+    const list = document.createElement('div');
+    list.className = 'seance-list';
+    panel.appendChild(list);
+    renderSeanceRows(list, dayList);
+  } else {
+    panel.innerHTML = '<div class="empty-state">Touche un jour pour voir ses séances.</div>';
+  }
 }
 
 // ===================== MODAL PROFIL =====================
@@ -626,6 +759,33 @@ document.getElementById('copyConfirm').addEventListener('click', () => {
     target.seances.push(copy);
   });
   document.getElementById('copyModal').classList.add('hidden');
+  renderAll();
+  saveData();
+});
+
+// ===================== MODAL DUPLIQUER A UNE AUTRE DATE =====================
+let duplicatingSeanceId = null;
+function openDuplicateModal(seanceId){
+  duplicatingSeanceId = seanceId;
+  const s = currentProfile().seances.find(x => x.id === seanceId);
+  document.getElementById('dupDate').value = s.date;
+  document.getElementById('dupHeure').value = s.heure;
+  document.getElementById('duplicateModal').classList.remove('hidden');
+}
+document.getElementById('dupCancel').addEventListener('click', () => document.getElementById('duplicateModal').classList.add('hidden'));
+document.getElementById('dupConfirm').addEventListener('click', () => {
+  const newDate = document.getElementById('dupDate').value;
+  if(!newDate){ alert('Choisis une date.'); return; }
+  const newHeure = document.getElementById('dupHeure').value || '18:00';
+  const profile = currentProfile();
+  const seance = profile.seances.find(x => x.id === duplicatingSeanceId);
+  if(!seance){ document.getElementById('duplicateModal').classList.add('hidden'); return; }
+  const copy = JSON.parse(JSON.stringify(seance));
+  copy.id = uid('s');
+  copy.date = newDate;
+  copy.heure = newHeure;
+  profile.seances.push(copy);
+  document.getElementById('duplicateModal').classList.add('hidden');
   renderAll();
   saveData();
 });
