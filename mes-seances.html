@@ -99,6 +99,37 @@
   .day-view-head{margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid var(--noir);}
   .day-view-head h2{font-size:1.25rem; color:var(--noir); text-transform:capitalize;}
   .day-view-head .sub{font-size:0.82rem; color:var(--pierre); margin-top:3px;}
+
+  /* SAISIE CHARGE / RPE */
+  .log-container{margin-top:4px;}
+  .exo-mini{padding:12px 0;}
+  .exo-line{display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 8px;}
+  .exo-mini .vol{margin-left:0;}
+  .exo-mini .series-boxes{margin:10px 0 4px;}
+  .log-edit{margin-top:14px; padding-top:14px; border-top:1px dashed var(--border);}
+  .log-summary{margin-top:14px;}
+  .log-label{font-size:0.8rem; font-weight:600; color:var(--pierre); margin-bottom:10px;}
+  .series-boxes{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .serie-box{position:relative; width:60px; height:60px; border:1.5px solid var(--border); background:var(--blanc); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .serie-box.readonly{font-weight:700; color:var(--noir); font-size:0.88rem;}
+  .serie-box .serie-index{position:absolute; top:3px; left:5px; font-size:0.6rem; color:var(--pierre); font-weight:700;}
+  .serie-box input{width:100%; height:100%; border:none; background:transparent; text-align:center; font-size:0.92rem; font-weight:700; color:var(--noir); font-family:inherit; padding-top:8px;}
+  .serie-box input:focus{outline:none;}
+  .serie-box .remove-serie{position:absolute; top:-7px; right:-7px; width:18px; height:18px; border-radius:50%; background:var(--noir); color:var(--blanc); font-size:0.6rem; display:flex; align-items:center; justify-content:center; padding:0; line-height:1;}
+  .serie-box .remove-serie:active{background:var(--rouge);}
+  .add-serie-box{width:60px; height:60px; border:1.5px dashed var(--pierre); background:none; color:var(--pierre); font-size:1.5rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .add-serie-box:active{border-color:var(--rouge); color:var(--rouge);}
+  .rpe-scale{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+  .rpe-btn{width:34px; height:34px; border:1.5px solid var(--border); background:var(--blanc); font-weight:700; font-size:0.85rem; border-radius:var(--radius); color:var(--texte);}
+  .rpe-btn.selected{background:var(--rouge); color:var(--blanc); border-color:var(--rouge);}
+  .btn-save-log{width:100%; padding:11px; background:var(--rouge); color:var(--blanc); font-weight:600; font-size:0.9rem; border-radius:var(--radius);}
+  .btn-save-log:active{background:var(--rouge-dark);}
+  .btn-save-log:disabled{opacity:0.6;}
+  .log-summary{background:var(--blanc-2); padding:14px 16px;}
+  .log-summary-head{display:flex; justify-content:space-between; align-items:center; font-size:0.88rem; font-weight:700; color:var(--noir); margin-bottom:10px;}
+  .log-edit-btn{background:none; color:var(--pierre); font-size:0.8rem; font-weight:600; padding:4px 8px;}
+  .log-edit-btn:active{color:var(--rouge);}
+  .log-rpe-badge{display:inline-block; margin-top:4px; background:var(--rouge); color:var(--blanc); font-weight:700; font-size:0.78rem; padding:4px 10px; border-radius:var(--radius);}
 </style>
 </head>
 <body>
@@ -125,13 +156,63 @@ let profiles = [];
 let currentAthleteId = null;
 let currentTab = 'calendrier';
 
+const AUTH_HEADERS = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+const LOG_PREFIX = 'nissa_log_';
+let logs = {};   // retours du joueur : clé "profileId|seanceId"
+
 async function loadData(){
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.${DATA_ROW_ID}&select=data`, {
-    headers:{ apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-  });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.${DATA_ROW_ID}&select=data`, { headers: AUTH_HEADERS });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
   const rows = await res.json();
   return (rows.length && rows[0].data && rows[0].data.profiles) ? rows[0].data.profiles : [];
 }
+
+async function loadLogsInto(profileId){
+  try{
+    const url = `${SUPABASE_URL}/rest/v1/app_data?id=like.${LOG_PREFIX}*&data->>profileId=eq.${encodeURIComponent(profileId)}&select=data`;
+    const res = await fetch(url, { headers: AUTH_HEADERS });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    Object.keys(logs).filter(k => k.startsWith(profileId + '|')).forEach(k => delete logs[k]);
+    rows.forEach(r => { const d = r.data; if(d && d.profileId === profileId && d.seanceId) logs[d.profileId + '|' + d.seanceId] = d; });
+  }catch(err){ console.error('Chargement des retours impossible', err); }
+}
+
+// Chaque joueur écrit uniquement sa propre ligne (une par séance) : il ne peut pas écraser les séances du coach.
+async function saveLog(log){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_data`, {
+      method:'POST',
+      headers:{ ...AUTH_HEADERS, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ id: LOG_PREFIX + log.profileId + '_' + log.seanceId, data: log, updated_at: log.updatedAt })
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return true;
+  }catch(err){
+    console.error('Échec de l\'enregistrement', err);
+    alert('Échec de l\'enregistrement — vérifie ta connexion et réessaie.');
+    return false;
+  }
+}
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Séries / reps (compatible avec les anciennes séances qui n'avaient qu'un champ "volume")
+function exView(ex){
+  if(ex.series !== undefined || ex.reps !== undefined) return { series: ex.series, reps: ex.reps };
+  const v = String(ex.volume || '').trim();
+  const m = v.match(/^(\d+)\s*[x×X]\s*(.+)$/);
+  return m ? { series: parseInt(m[1], 10), reps: m[2].trim() } : { series: '', reps: v };
+}
+function fmtVolume(v){
+  const s = v.series ? `${v.series} série${v.series > 1 ? 's' : ''}` : '';
+  let r = String(v.reps ?? '').trim();
+  if(/^\d+([-–]\d+)?$/.test(r)) r += ' reps';
+  return [s, r].filter(Boolean).join(' × ');
+}
+function exKey(ex, i){ return ex.id || ('i' + i); }
 
 function fmtDate(iso){
   const d = new Date(iso+'T00:00:00');
@@ -170,13 +251,15 @@ function renderPicker(){
     btn.className = 'athlete-btn';
     btn.innerHTML = `
       <div>
-        <div class="name">${p.nom}</div>
-        <div class="sub">${p.poste} · ${p.groupe}</div>
+        <div class="name">${esc(p.nom)}</div>
+        <div class="sub">${esc(p.poste)} · ${esc(p.groupe)}</div>
       </div>
       <span class="arrow">›</span>`;
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       currentAthleteId = p.id;
       selectedDate = null;
+      document.getElementById('mainArea').innerHTML = '<div class="loading-state">Chargement…</div>';
+      await loadLogsInto(p.id);
       renderProfile();
     });
     list.appendChild(btn);
@@ -201,32 +284,118 @@ function renderProfile(){
   renderCalendarView(p);
 }
 
-function buildSeanceCard(s){
-  const labels = computeExoLabels(s.exercices || []);
+function buildSeanceCard(s, p){
   const card = document.createElement('div');
   card.className = 'seance-card';
   card.innerHTML = `
-    <div class="seance-bar bar-${s.type}"></div>
+    <div class="seance-bar bar-${esc(s.type)}"></div>
     <div class="seance-card-body">
       <div class="seance-card-head">
         <div>
-          <div class="titre">${s.titre}</div>
-          <div class="meta-line">${fmtDate(s.date)} · ${s.heure}</div>
+          <div class="titre">${esc(s.titre)}</div>
+          <div class="meta-line">${fmtDate(s.date)} · ${esc(s.heure)}</div>
         </div>
         <span class="type-chip">${typeLabel(s.type)}</span>
       </div>
       <div class="seance-detail">
-        <div class="objectif">${s.objectif || 'Aucun objectif renseigné.'}</div>
-        ${(s.exercices || []).map((ex,i) => `
-          <div class="exo-mini">
-            <div><span class="label">${labels[i]}</span><span class="nom">${ex.nom}</span><span class="vol">${ex.volume}</span></div>
-            ${ex.consigne ? `<div class="cons">${ex.consigne}</div>` : ''}
-          </div>`).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>'}
+        <div class="objectif">${esc(s.objectif) || 'Aucun objectif renseigné.'}</div>
+        <div class="log-container"></div>
       </div>
     </div>
   `;
   card.querySelector('.seance-card-head').addEventListener('click', () => card.classList.toggle('open'));
+  renderSeanceBody(card.querySelector('.log-container'), s, p, false);
   return card;
+}
+
+// ===================== EXERCICES + CHARGES + RPE =====================
+function renderSeanceBody(container, s, p, editing){
+  const exos = s.exercices || [];
+  const labels = computeExoLabels(exos);
+  const logKey = p.id + '|' + s.id;
+  const log = logs[logKey] || null;
+  const readonly = !!log && !editing;
+
+  // brouillon : une case de poids par série prévue par le coach
+  const draft = { charges: {}, rpe: log ? log.rpe : null };
+  exos.forEach((ex, i) => {
+    const k = exKey(ex, i);
+    const n = Math.max(1, parseInt(exView(ex).series, 10) || 1);
+    const saved = (log && log.charges && log.charges[k]) ? log.charges[k] : [];
+    const arr = [];
+    for(let j = 0; j < Math.max(n, saved.length); j++) arr.push(saved[j] ?? '');
+    draft.charges[k] = arr;
+  });
+
+  function paint(){
+    const exosHtml = exos.map((ex, i) => {
+      const k = exKey(ex, i);
+      const v = exView(ex);
+      const boxes = draft.charges[k].map((val, j) => readonly
+        ? `<div class="serie-box readonly"><span class="serie-index">S${j+1}</span>${String(val).trim() !== '' ? esc(val) : '–'}</div>`
+        : `<div class="serie-box"><span class="serie-index">S${j+1}</span><input type="text" inputmode="decimal" data-k="${esc(k)}" data-j="${j}" value="${esc(val)}" placeholder="kg"></div>`
+      ).join('');
+      const add = (!readonly && !v.series) ? `<button type="button" class="add-serie-box" data-k="${esc(k)}">+</button>` : '';
+      return `
+        <div class="exo-mini">
+          <div class="exo-line"><span class="label">${labels[i]}</span><span class="nom">${esc(ex.nom)}</span><span class="vol">${esc(fmtVolume(v))}</span></div>
+          ${ex.consigne ? `<div class="cons">${esc(ex.consigne)}</div>` : ''}
+          <div class="series-boxes">${boxes}${add}</div>
+        </div>`;
+    }).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>';
+
+    const tail = readonly
+      ? `<div class="log-summary">
+           <div class="log-summary-head"><span>Séance enregistrée ✓</span><button class="log-edit-btn" type="button">Modifier</button></div>
+           <div class="log-rpe-badge">RPE ${esc(log.rpe)}/10</div>
+         </div>`
+      : `<div class="log-edit">
+           <div class="log-label">RPE de la séance (1 = très facile, 10 = effort maximal)</div>
+           <div class="rpe-scale"></div>
+           <button class="btn-save-log" type="button">Enregistrer ma séance</button>
+         </div>`;
+
+    container.innerHTML = exosHtml + tail;
+
+    if(readonly){
+      container.querySelector('.log-edit-btn').addEventListener('click', () => renderSeanceBody(container, s, p, true));
+      return;
+    }
+
+    container.querySelectorAll('.serie-box input').forEach(inp => {
+      inp.addEventListener('input', () => { draft.charges[inp.dataset.k][parseInt(inp.dataset.j, 10)] = inp.value; });
+    });
+    container.querySelectorAll('.add-serie-box').forEach(btn => {
+      btn.addEventListener('click', () => { draft.charges[btn.dataset.k].push(''); paint(); });
+    });
+
+    const scale = container.querySelector('.rpe-scale');
+    for(let i = 1; i <= 10; i++){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rpe-btn' + (draft.rpe === i ? ' selected' : '');
+      b.textContent = i;
+      b.addEventListener('click', () => {
+        draft.rpe = i;
+        scale.querySelectorAll('.rpe-btn').forEach(x => x.classList.toggle('selected', x === b));
+      });
+      scale.appendChild(b);
+    }
+
+    const saveBtn = container.querySelector('.btn-save-log');
+    saveBtn.addEventListener('click', async () => {
+      if(!draft.rpe){ alert('Choisis ton RPE (de 1 à 10) avant d\'enregistrer.'); return; }
+      saveBtn.textContent = 'Enregistrement…';
+      saveBtn.disabled = true;
+      const charges = {};
+      Object.keys(draft.charges).forEach(k => { charges[k] = draft.charges[k].map(v => String(v).trim()); });
+      const newLog = { profileId: p.id, seanceId: s.id, charges, rpe: draft.rpe, updatedAt: new Date().toISOString() };
+      const ok = await saveLog(newLog);
+      if(ok){ logs[logKey] = newLog; renderSeanceBody(container, s, p, false); }
+      else { saveBtn.textContent = 'Enregistrer ma séance'; saveBtn.disabled = false; }
+    });
+  }
+  paint();
 }
 
 // ===================== CALENDRIER =====================
@@ -310,13 +479,19 @@ function renderDayView(p, dateStr){
     listEl.innerHTML = '<div class="empty-state">Aucune séance ce jour-là.</div>';
   } else {
     listEl.className = 'seance-list';
-    daySeances.forEach(s => listEl.appendChild(buildSeanceCard(s)));
+    daySeances.forEach(s => listEl.appendChild(buildSeanceCard(s, p)));
   }
 }
 
 async function init(){
-  profiles = await loadData();
-  if(currentAthleteId){ renderProfile(); } else { renderPicker(); }
+  try{
+    profiles = await loadData();
+  }catch(err){
+    console.error(err);
+    document.getElementById('mainArea').innerHTML = '<div class="empty-state">Impossible de charger les séances. Vérifie ta connexion puis appuie sur « Actualiser ».</div>';
+    return;
+  }
+  if(currentAthleteId){ await loadLogsInto(currentAthleteId); renderProfile(); } else { renderPicker(); }
 }
 
 document.getElementById('refreshBtn').addEventListener('click', async () => {
