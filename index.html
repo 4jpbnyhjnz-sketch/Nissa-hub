@@ -156,6 +156,72 @@
   .copy-athlete-item .name{font-weight:600; font-size:0.92rem; color:var(--noir);}
   .copy-athlete-item .sub{font-size:0.78rem; color:var(--pierre); margin-top:2px;}
   .copy-empty{color:var(--pierre); font-size:0.88rem; padding:10px 0;}
+/* >>> SCHEMA_CSS */
+  /* SCHEMAS : miniatures + visionneuse */
+  .schema-label{font-size:0.78rem; font-weight:600; color:var(--pierre); margin:0 0 8px;}
+  .schema-strip{display:flex; flex-wrap:wrap; gap:10px; margin:0 0 14px;}
+  .schema-thumb{width:150px; background:var(--blanc); border:1px solid var(--border); padding:6px; text-align:left; cursor:pointer; font-family:inherit;}
+  .schema-thumb:hover, .schema-thumb:active{border-color:var(--rouge);}
+  .schema-thumb svg{display:block; width:100%; height:auto; border-radius:2px;}
+  .schema-thumb span{display:block; margin-top:6px; font-size:0.74rem; font-weight:600; color:var(--noir); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sv-overlay{position:fixed; inset:0; z-index:300; background:rgba(14,12,9,0.97); display:flex; flex-direction:column; color:var(--blanc);}
+  .sv-bar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:3px solid var(--rouge);}
+  .sv-title{font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:0.95rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sv-tools{display:flex; gap:8px; flex-shrink:0;}
+  .sv-tools button{background:#2a241c; color:var(--blanc); min-width:40px; height:36px; padding:0 12px; font-weight:700; font-size:1rem; border-radius:var(--radius);}
+  .sv-tools button.sv-close{background:var(--rouge); font-size:0.85rem;}
+  .sv-tabs{display:flex; gap:8px; padding:10px 16px 0; overflow-x:auto;}
+  .sv-tabs button{background:none; color:var(--pierre); padding:6px 12px; font-size:0.82rem; font-weight:600; border:1px solid #3a332a; border-radius:var(--radius); white-space:nowrap;}
+  .sv-tabs button.active{color:var(--blanc); border-color:var(--rouge);}
+  .sv-scroll{flex:1; overflow:auto; padding:14px 16px; -webkit-overflow-scrolling:touch;}
+  .sv-inner{margin:0 auto;}
+  .sv-inner svg{display:block; width:100%; height:auto; border-radius:3px;}
+  .sv-hint{padding:8px 16px 12px; font-size:0.76rem; color:var(--pierre); text-align:center;}
+  /* EDITEUR DE SCHEMA */
+  .se-overlay{position:fixed; inset:0; z-index:200; background:rgba(22,19,15,0.88); display:flex; justify-content:center; padding:14px;}
+  .se-panel{background:var(--blanc); width:100%; max-width:1340px; display:flex; flex-direction:column; border-top:4px solid var(--rouge); min-height:0;}
+  .se-top{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:12px 16px; border-bottom:1px solid var(--border);}
+  .se-top input[type=text]{flex:1 1 220px; min-width:160px; padding:9px 12px; border:1.5px solid var(--border); background:var(--blanc); font-size:0.9rem; border-radius:var(--radius);}
+  .se-top select{padding:9px 10px; border:1.5px solid var(--border); background:var(--blanc); font-size:0.88rem; border-radius:var(--radius);}
+  .se-top input:focus, .se-top select:focus, .se-props input[type=text]:focus{outline:none; border-color:var(--rouge);}
+  .se-check{display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--texte); cursor:pointer;}
+  .se-top-actions{display:flex; gap:4px; align-items:center;}
+  .se-top-actions .btn-text:disabled{opacity:0.35; cursor:default;}
+  .se-close-actions{display:flex; gap:10px; margin-left:auto;}
+  .se-body{flex:1; min-height:0; display:grid; grid-template-columns:116px minmax(0,1fr) 230px;}
+  .se-tools{display:flex; flex-direction:column; gap:6px; padding:12px; border-right:1px solid var(--border); overflow-y:auto;}
+  .se-tool{display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 4px; background:var(--blanc); border:1.5px solid var(--border); color:var(--noir); font-size:0.74rem; font-weight:600; border-radius:var(--radius);}
+  .se-tool:hover{border-color:var(--pierre);}
+  .se-tool.active{background:var(--noir); color:var(--blanc); border-color:var(--noir);}
+  .se-canvas-wrap{display:flex; justify-content:center; align-items:flex-start; padding:14px; overflow:auto; background:var(--blanc-2);}
+  .se-svg{display:block; width:min(100%, calc((100vh - 190px) * var(--ar, 1.7))); height:auto; aspect-ratio:var(--ar, 1.7); touch-action:none; user-select:none; -webkit-user-select:none; cursor:crosshair; border-radius:3px; box-shadow:0 2px 10px rgba(0,0,0,0.25);}
+  .se-props{padding:14px; border-left:1px solid var(--border); overflow-y:auto;}
+  .se-prop-block{margin-bottom:16px;}
+  .se-prop-title{display:block; font-size:0.78rem; font-weight:600; color:var(--pierre); margin-bottom:8px;}
+  .se-props input[type=text]{width:100%; padding:9px 12px; border:1.5px solid var(--border); background:var(--blanc); font-size:0.9rem; border-radius:var(--radius);}
+  .se-palette{display:flex; flex-wrap:wrap; gap:8px;}
+  .se-palette button{width:30px; height:30px; border-radius:50%; border:2px solid var(--border);}
+  .se-palette button.active{border-color:var(--noir); box-shadow:0 0 0 2px var(--blanc), 0 0 0 4px var(--rouge);}
+  .se-hint{font-size:0.78rem; color:var(--pierre); line-height:1.45;}
+  .schema-item{display:flex; gap:12px; align-items:center; border:1px solid var(--border); padding:8px; margin-bottom:8px;}
+  .schema-prev{width:120px; flex-shrink:0;}
+  .schema-prev svg{display:block; width:100%; height:auto; border-radius:2px;}
+  .schema-meta{min-width:0;}
+  .schema-name{font-weight:600; font-size:0.9rem; color:var(--noir);}
+  .schema-sub{font-size:0.78rem; color:var(--pierre); margin-top:2px;}
+  .schema-actions{display:flex; gap:14px; margin-top:6px;}
+  .schema-empty{font-size:0.84rem; color:var(--pierre); padding:6px 0 10px;}
+  @media(max-width:900px){
+    .se-overlay{padding:0;}
+    .se-body{grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr) auto;}
+    .se-tools{flex-direction:row; overflow-x:auto; overflow-y:hidden; border-right:none; border-bottom:1px solid var(--border);}
+    .se-tool{min-width:64px;}
+    .se-props{border-left:none; border-top:1px solid var(--border); max-height:34vh;}
+    .se-svg{width:min(100%, calc((100vh - 360px) * var(--ar, 1.7)));}
+    .se-close-actions{margin-left:0;}
+  }
+/* <<< SCHEMA_CSS */
+
 </style>
 </head>
 <body>
@@ -246,6 +312,11 @@
       <label>Exercices</label>
       <div id="exoEditorList"></div>
       <button class="add-exo-btn" id="addExoBtn">+ Ajouter un exercice</button>
+    </div>
+    <div class="field">
+      <label>Schémas (terrain, flèches, plots…)</label>
+      <div id="schemaList"></div>
+      <button type="button" class="add-exo-btn" id="addSchemaBtn">+ Ajouter un schéma</button>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="seanceCancel">Annuler</button>
@@ -401,7 +472,8 @@ function esc(v){
   return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Un exercice = nom + séries + reps + consigne (+ superset). Ancien champ "volume" converti automatiquement.
+// Un exercice = nom + séries + reps + consigne (+ superset). Ancien champ "volume" converti automatiquement ;
+// "volume" reste écrit comme simple résumé lisible pour les anciennes pages joueurs encore en cache.
 function normalizeExo(ex){
   const e = {...ex};
   if(!e.id) e.id = uid('e');
@@ -411,7 +483,7 @@ function normalizeExo(ex){
     if(m){ e.series = parseInt(m[1], 10); e.reps = m[2].trim(); }
     else { e.series = ''; e.reps = v; }
   }
-  delete e.volume;
+  e.volume = fmtVolume(e);
   return e;
 }
 function normalizeProfiles(list){
@@ -555,6 +627,10 @@ function renderSeanceRows(container, list, emptyMsg){
         </div>`;
     }).join('') || '<div class="exo-mini" style="color:var(--pierre);">Aucun exercice renseigné.</div>';
 
+    const schemasHtml = (s.schemas && s.schemas.length)
+      ? `<div class="schema-label">Schémas</div><div class="schema-strip">${s.schemas.map((sc, i) =>
+          `<button type="button" class="schema-thumb" data-si="${i}">${renderSchemaSVG(sc)}<span>${esc(sc.titre || ('Schéma ' + (i + 1)))}</span></button>`).join('')}</div>`
+      : '';
     let logLine = '';
     if(log){
       const when = log.updatedAt ? new Date(log.updatedAt).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '';
@@ -578,6 +654,7 @@ function renderSeanceRows(container, list, emptyMsg){
       </div>
       <div class="seance-detail">
         <div class="objectif">${esc(s.objectif) || 'Aucun objectif renseigné.'}</div>
+        ${schemasHtml}
         <div class="exo-list">${exosHtml}</div>
         ${logLine}
         <div class="row-actions">
@@ -589,6 +666,7 @@ function renderSeanceRows(container, list, emptyMsg){
       </div>
     `;
     row.querySelector('.seance-row-head').addEventListener('click', () => row.classList.toggle('open'));
+    row.querySelectorAll('.schema-thumb').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openSchemaViewer(s.schemas, parseInt(b.getAttribute('data-si'), 10)); }));
     row.querySelector('.edit-sc').addEventListener('click', (e) => { e.stopPropagation(); openSeanceModal(s.id); });
     row.querySelector('.dup-sc').addEventListener('click', (e) => { e.stopPropagation(); openDuplicateModal(s.id); });
     row.querySelector('.copy-sc').addEventListener('click', (e) => { e.stopPropagation(); openCopyModal(s.id); });
@@ -683,6 +761,503 @@ function renderCalendarView(profile){
   }
 }
 
+// >>> SCHEMA_LIB
+// ===================== SCHEMAS : RENDU PARTAGÉ (admin + joueurs) =====================
+const SCHEMA_FIELDS = {
+  full:   { label:'Terrain complet', w:120, h:70, s:1 },
+  half:   { label:'Demi-terrain',    w:62,  h:70, s:0.9 },
+  square: { label:'Carré vert',      w:40,  h:40, s:0.75 }
+};
+const SCHEMA_COLORS = [
+  {c:'#ffffff', n:'Blanc'}, {c:'#ffd400', n:'Jaune'}, {c:'#ff9f1a', n:'Orange'},
+  {c:'#e53935', n:'Rouge'}, {c:'#1e88e5', n:'Bleu'},  {c:'#111111', n:'Noir'}
+];
+function sr(v){ return Math.round(v * 100) / 100; }
+function snum(v){ const n = Number(v); return isFinite(n) ? n : 0; }
+function schemaColor(c, fallback){ return /^#[0-9a-fA-F]{6}$/.test(String(c)) ? String(c) : fallback; }
+function schemaLum(hex){
+  const h = hex.replace('#','');
+  return (0.299*parseInt(h.slice(0,2),16) + 0.587*parseInt(h.slice(2,4),16) + 0.114*parseInt(h.slice(4,6),16)) / 255;
+}
+
+function schemaGridSVG(w, h){
+  let g = '<g stroke="#fff" stroke-width="0.12" opacity="0.4">';
+  for(let x = 5; x < w; x += 5) g += `<line x1="${x}" y1="0" x2="${x}" y2="${h}"/>`;
+  for(let y = 5; y < h; y += 5) g += `<line x1="0" y1="${y}" x2="${w}" y2="${y}"/>`;
+  return g + '</g>';
+}
+
+function schemaFieldSVG(field, grid){
+  if(field === 'square'){
+    let g = '<rect x="0" y="0" width="40" height="40" fill="#3f8a34"/>';
+    for(let i = 0; i < 8; i += 2) g += `<rect x="${i*5}" y="0" width="5" height="40" fill="#fff" opacity="0.045"/>`;
+    g += '<rect x="0.6" y="0.6" width="38.8" height="38.8" fill="none" stroke="#fff" stroke-width="0.35"/>';
+    if(grid) g += schemaGridSVG(40, 40);
+    return g;
+  }
+  let g = '<rect x="0" y="0" width="120" height="70" fill="#3f8a34"/>';
+  for(let x = 10; x < 110; x += 20) g += `<rect x="${x}" y="0" width="10" height="70" fill="#fff" opacity="0.045"/>`;
+  g += '<rect x="0" y="0" width="10" height="70" fill="#000" opacity="0.12"/><rect x="110" y="0" width="10" height="70" fill="#000" opacity="0.12"/>';
+  const L = 'stroke="#fff" stroke-width="0.35" fill="none"';
+  const D = 'stroke="#fff" stroke-width="0.3" stroke-dasharray="1.6 1.6" fill="none"';
+  g += `<rect x="0.18" y="0.18" width="119.64" height="69.64" ${L}/>`;
+  [10, 32, 60, 88, 110].forEach(x => { g += `<line x1="${x}" y1="0" x2="${x}" y2="70" ${L}/>`; });
+  [50, 70].forEach(x => { g += `<line x1="${x}" y1="0" x2="${x}" y2="70" ${D}/>`; });
+  [5, 15, 55, 65].forEach(y => { g += `<line x1="10" y1="${y}" x2="110" y2="${y}" ${D}/>`; });
+  [10, 110].forEach(x => {
+    g += `<line x1="${x}" y1="32.2" x2="${x}" y2="37.8" stroke="#fff" stroke-width="0.6"/>`;
+    g += `<circle cx="${x}" cy="32.2" r="0.5" fill="#fff"/><circle cx="${x}" cy="37.8" r="0.5" fill="#fff"/>`;
+  });
+  if(grid) g += schemaGridSVG(120, 70);
+  return g;
+}
+
+function schemaElementSVG(el, S){
+  const id = esc(el.id);
+  const x = snum(el.x), y = snum(el.y);
+  switch(el.t){
+    case 'arrow':
+    case 'line': {
+      const c = schemaColor(el.c, '#ffffff');
+      const x1 = snum(el.x1), y1 = snum(el.y1), x2 = snum(el.x2), y2 = snum(el.y2);
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 0.001;
+      const ux = dx / len, uy = dy / len;
+      const isArrow = el.t === 'arrow';
+      const hl = isArrow ? Math.min(2.8 * S, len * 0.7) : 0;
+      const hw = 1.9 * S;
+      const bx = x2 - ux * hl, by = y2 - uy * hl;
+      const dash = el.dash ? `stroke-dasharray="${sr(1.5 * S)} ${sr(1.1 * S)}"` : '';
+      const sw = 0.55 * S;
+      const pos = `x1="${sr(x1)}" y1="${sr(y1)}" x2="${sr(bx)}" y2="${sr(by)}"`;
+      let g = `<g data-id="${id}">`;
+      g += `<line x1="${sr(x1)}" y1="${sr(y1)}" x2="${sr(x2)}" y2="${sr(y2)}" stroke="transparent" stroke-width="${sr(3.4 * S)}" stroke-linecap="round"/>`;
+      g += `<line ${pos} stroke="#000" stroke-opacity="0.3" stroke-width="${sr(sw + 0.45 * S)}" ${dash}/>`;
+      g += `<line ${pos} stroke="${c}" stroke-width="${sr(sw)}" ${dash}/>`;
+      if(isArrow){
+        const px = -uy * hw / 2, py = ux * hw / 2;
+        g += `<polygon points="${sr(x2)},${sr(y2)} ${sr(bx + px)},${sr(by + py)} ${sr(bx - px)},${sr(by - py)}" fill="${c}" stroke="#000" stroke-opacity="0.3" stroke-width="${sr(0.25 * S)}" stroke-linejoin="round"/>`;
+      }
+      return g + '</g>';
+    }
+    case 'text': {
+      const c = schemaColor(el.c, '#ffffff');
+      const t = String(el.text ?? '').slice(0, 40);
+      const fs = 2.8 * S;
+      const w = Math.max(3 * S, t.length * fs * 0.6 + 1.4 * S);
+      const outline = schemaLum(c) < 0.45 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)';
+      const tx = `x="${sr(x)}" y="${sr(y)}" dy=".35em" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-size="${sr(fs)}" font-weight="800"`;
+      return `<g data-id="${id}"><rect x="${sr(x - w / 2)}" y="${sr(y - fs * 0.8)}" width="${sr(w)}" height="${sr(fs * 1.6)}" fill="transparent"/>` +
+        `<text ${tx} fill="none" stroke="${outline}" stroke-width="${sr(0.7 * S)}" stroke-linejoin="round">${esc(t)}</text>` +
+        `<text ${tx} fill="${c}">${esc(t)}</text></g>`;
+    }
+    case 'cone': {
+      const c = schemaColor(el.c, '#ff9f1a');
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(2 * S)}" fill="transparent"/>` +
+        `<circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(1.05 * S)}" fill="${c}" stroke="rgba(0,0,0,0.45)" stroke-width="${sr(0.2 * S)}"/>` +
+        `<circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(0.45 * S)}" fill="rgba(255,255,255,0.75)"/></g>`;
+    }
+    case 'player': {
+      const c = schemaColor(el.c, '#e53935');
+      const label = String(el.label ?? '').slice(0, 3);
+      const light = schemaLum(c) > 0.62;
+      const fs = label.length > 1 ? 1.5 * S : 2.1 * S;
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(1.9 * S)}" fill="${c}" stroke="${light ? '#222' : '#fff'}" stroke-width="${sr(0.3 * S)}"/>` +
+        (label ? `<text x="${sr(x)}" y="${sr(y)}" dy=".35em" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-size="${sr(fs)}" font-weight="800" fill="${light ? '#111' : '#fff'}">${esc(label)}</text>` : '') + '</g>';
+    }
+    case 'ball':
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(2 * S)}" fill="transparent"/>` +
+        `<g transform="rotate(-25 ${sr(x)} ${sr(y)})"><ellipse cx="${sr(x)}" cy="${sr(y)}" rx="${sr(1.5 * S)}" ry="${sr(0.95 * S)}" fill="#a0522d" stroke="#fff" stroke-width="${sr(0.2 * S)}"/>` +
+        `<line x1="${sr(x - 0.6 * S)}" y1="${sr(y)}" x2="${sr(x + 0.6 * S)}" y2="${sr(y)}" stroke="#fff" stroke-width="${sr(0.16 * S)}"/></g></g>`;
+    default:
+      return '';
+  }
+}
+// Ordre d'affichage : traits et flèches dessous, puis plots / joueurs / ballon, puis textes dessus.
+const SCHEMA_LAYER = { line:0, arrow:0, cone:1, ball:1, player:1, text:2 };
+function schemaElementsSVG(elements, S){
+  return (elements || []).map((el, i) => ({ el, i, l: SCHEMA_LAYER[el.t] ?? 1 }))
+    .sort((a, b) => a.l - b.l || a.i - b.i)
+    .map(x => schemaElementSVG(x.el, S)).join('');
+}
+
+function renderSchemaSVG(schema, opts){
+  const f = SCHEMA_FIELDS[schema.field] || SCHEMA_FIELDS.full;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f.w} ${f.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(schema.titre || 'Schéma')}">` +
+    schemaFieldSVG(schema.field, schema.grid) + schemaElementsSVG(schema.elements, f.s) + '</svg>';
+}
+
+// Visionneuse plein écran (zoom + / −), utilisée par le joueur et par le coach
+function openSchemaViewer(schemas, startIdx){
+  schemas = (schemas || []).filter(Boolean);
+  if(!schemas.length) return;
+  let cur = Math.min(Math.max(startIdx || 0, 0), schemas.length - 1);
+  const ZOOMS = [1, 1.5, 2, 3, 4];
+  let zi = 0;
+  const old = document.getElementById('schemaViewer');
+  if(old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'schemaViewer';
+  ov.className = 'sv-overlay';
+  document.body.appendChild(ov);
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  function close(){
+    document.removeEventListener('keydown', onKey);
+    document.body.style.overflow = prevOverflow;
+    ov.remove();
+  }
+  function onKey(e){ if(e.key === 'Escape') close(); }
+  function applyZoom(){
+    const inner = ov.querySelector('.sv-inner');
+    if(inner) inner.style.width = (ZOOMS[zi] * 100) + '%';
+  }
+  function paint(){
+    const sc = schemas[cur];
+    ov.innerHTML = `
+      <div class="sv-bar">
+        <div class="sv-title">${esc(sc.titre || ('Schéma ' + (cur + 1)))}</div>
+        <div class="sv-tools">
+          <button type="button" data-a="out" aria-label="Dézoomer">−</button>
+          <button type="button" data-a="in" aria-label="Zoomer">+</button>
+          <button type="button" data-a="close" class="sv-close">Fermer</button>
+        </div>
+      </div>
+      ${schemas.length > 1 ? `<div class="sv-tabs">${schemas.map((x, i) =>
+        `<button type="button" data-a="tab" data-i="${i}" class="${i === cur ? 'active' : ''}">${esc(x.titre || ('Schéma ' + (i + 1)))}</button>`).join('')}</div>` : ''}
+      <div class="sv-scroll"><div class="sv-inner">${renderSchemaSVG(sc)}</div></div>
+      <div class="sv-hint">Utilise + / − pour zoomer et fais glisser pour te déplacer.</div>`;
+    applyZoom();
+  }
+  ov.addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]');
+    if(!b) return;
+    const a = b.getAttribute('data-a');
+    if(a === 'close') close();
+    else if(a === 'in'){ zi = Math.min(zi + 1, ZOOMS.length - 1); applyZoom(); }
+    else if(a === 'out'){ zi = Math.max(zi - 1, 0); applyZoom(); }
+    else if(a === 'tab'){ cur = parseInt(b.getAttribute('data-i'), 10) || 0; zi = 0; paint(); }
+  });
+  document.addEventListener('keydown', onKey);
+  paint();
+}
+// <<< SCHEMA_LIB
+
+// >>> SCHEMA_EDITOR
+// ===================== EDITEUR DE SCHEMA (admin) =====================
+const SE_TOOLS = [
+  {id:'select', label:'Sélection', hint:'Clique un élément pour le sélectionner, glisse pour le déplacer. Glisse les ronds blancs pour allonger ou orienter une flèche.',
+   icon:'<path d="M6 3l11 8.5-5 1 3 6-2.4 1.2-3-6L6 18z" fill="currentColor"/>'},
+  {id:'arrow', label:'Course', hint:'Glisse sur le terrain du départ vers l\'arrivée pour tracer une flèche de course.',
+   icon:'<line x1="3" y1="18" x2="14" y2="8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><polygon points="19,4 10.5,6.5 15.5,12" fill="currentColor"/>'},
+  {id:'pass', label:'Passe', hint:'Glisse pour tracer une flèche en pointillés (passe, déplacement sans ballon…).',
+   icon:'<line x1="3" y1="18" x2="14" y2="8" stroke="currentColor" stroke-width="2.2" stroke-dasharray="3 2.4"/><polygon points="19,4 10.5,6.5 15.5,12" fill="currentColor"/>'},
+  {id:'line', label:'Trait', hint:'Glisse pour tracer un trait simple, sans pointe (limite de zone, ligne…).',
+   icon:'<line x1="3" y1="17" x2="19" y2="5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'},
+  {id:'text', label:'Texte', hint:'Clique sur le terrain puis tape le texte dans le champ à droite (ex. « 10 m »).',
+   icon:'<text x="11" y="17" text-anchor="middle" font-size="16" font-weight="800" fill="currentColor" font-family="Arial">T</text>'},
+  {id:'cone', label:'Plot', hint:'Clique sur le terrain pour poser un plot.',
+   icon:'<circle cx="11" cy="11" r="7" fill="currentColor"/><circle cx="11" cy="11" r="3" fill="#fff" opacity=".8"/>'},
+  {id:'player', label:'Joueur', hint:'Clique pour poser un joueur. Change sa couleur (équipe) et son numéro à droite.',
+   icon:'<circle cx="11" cy="11" r="8" fill="currentColor"/><text x="11" y="14.6" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="Arial">1</text>'},
+  {id:'ball', label:'Ballon', hint:'Clique pour poser un ballon.',
+   icon:'<ellipse cx="11" cy="11" rx="8" ry="5" transform="rotate(-25 11 11)" fill="currentColor"/>'},
+];
+const SE_DEFAULT_COLOR = {arrow:'#ffffff', pass:'#ffffff', line:'#ffffff', text:'#ffffff', cone:'#ff9f1a', player:'#e53935', ball:'#a0522d'};
+const SE_STEP = 0.5;
+
+const ed = { built:false, open:false, schema:null, tool:'select', color:'#ffffff', selId:null,
+             undo:[], redo:[], drag:null, initial:'', onSave:null, labelSnap:'', labelPushed:false };
+const seEl = {};
+
+function seSnap(){ return JSON.stringify({field:ed.schema.field, grid:!!ed.schema.grid, elements:ed.schema.elements}); }
+function seRestore(str){ const o = JSON.parse(str); ed.schema.field = o.field; ed.schema.grid = o.grid; ed.schema.elements = o.elements; }
+function seDirtyKey(){ return seSnap() + '|' + (ed.schema.titre || ''); }
+function sePushUndo(snapshot){
+  const s = snapshot || seSnap();
+  if(ed.undo[ed.undo.length - 1] !== s) ed.undo.push(s);
+  if(ed.undo.length > 80) ed.undo.shift();
+  ed.redo = [];
+}
+function seUndo(){ if(!ed.undo.length) return; ed.redo.push(seSnap()); seRestore(ed.undo.pop()); if(!seSel()) ed.selId = null; seSync(); }
+function seRedo(){ if(!ed.redo.length) return; ed.undo.push(seSnap()); seRestore(ed.redo.pop()); if(!seSel()) ed.selId = null; seSync(); }
+function seSel(){ return ed.schema ? ed.schema.elements.find(e => e.id === ed.selId) || null : null; }
+function seField(){ return SCHEMA_FIELDS[ed.schema.field] || SCHEMA_FIELDS.full; }
+function seSnapN(v, max){ const n = Math.round(v / SE_STEP) * SE_STEP; return Math.min(Math.max(n, 0), max); }
+function seSnapPt(p){ const f = seField(); return { x: seSnapN(p.x, f.w), y: seSnapN(p.y, f.h) }; }
+function seToSvg(e){
+  const r = seEl.svg.getBoundingClientRect(), f = seField();
+  return { x: (e.clientX - r.left) / (r.width || 1) * f.w, y: (e.clientY - r.top) / (r.height || 1) * f.h };
+}
+function seCleanup(){ ed.schema.elements = ed.schema.elements.filter(e => !(e.t === 'text' && !String(e.text || '').trim())); }
+
+function seBuild(){
+  const ov = document.createElement('div');
+  ov.className = 'se-overlay hidden';
+  ov.id = 'schemaEditor';
+  ov.innerHTML = `
+    <div class="se-panel">
+      <div class="se-top">
+        <input type="text" id="seTitle" maxlength="60" placeholder="Titre du schéma (ex. Jeu au large 3 contre 2)">
+        <select id="seField">${Object.keys(SCHEMA_FIELDS).map(k => `<option value="${k}">${SCHEMA_FIELDS[k].label}</option>`).join('')}</select>
+        <label class="se-check"><input type="checkbox" id="seGrid"> Quadrillage</label>
+        <div class="se-top-actions">
+          <button type="button" class="btn-text" id="seUndoBtn">Annuler</button>
+          <button type="button" class="btn-text" id="seRedoBtn">Rétablir</button>
+          <button type="button" class="btn-text" id="seClearBtn">Tout effacer</button>
+        </div>
+        <div class="se-close-actions">
+          <button type="button" class="btn btn-outline" id="seCancel">Fermer</button>
+          <button type="button" class="btn btn-rouge" id="seSave">Enregistrer le schéma</button>
+        </div>
+      </div>
+      <div class="se-body">
+        <div class="se-tools" id="seTools">${SE_TOOLS.map(t =>
+          `<button type="button" class="se-tool" data-tool="${t.id}"><svg viewBox="0 0 22 22" width="22" height="22">${t.icon}</svg><span>${t.label}</span></button>`).join('')}</div>
+        <div class="se-canvas-wrap"><svg id="seSvg" class="se-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+        <div class="se-props">
+          <div class="se-prop-block"><div class="se-prop-title">Couleur</div>
+            <div class="se-palette" id="sePalette">${SCHEMA_COLORS.map(c =>
+              `<button type="button" data-c="${c.c}" title="${c.n}" style="background:${c.c}"></button>`).join('')}</div></div>
+          <div class="se-prop-block hidden" id="seLabelBlock"><label class="se-prop-title" id="seLabelTitle" for="seLabel">Texte</label><input type="text" id="seLabel" maxlength="40"></div>
+          <div class="se-prop-block hidden" id="seDashBlock"><label class="se-check"><input type="checkbox" id="seDash"> Pointillé (passe)</label></div>
+          <div class="se-prop-block hidden" id="seDelBlock"><button type="button" class="btn btn-outline" id="seDelete">Supprimer la sélection</button></div>
+          <p class="se-hint" id="seHint"></p>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  Object.assign(seEl, {
+    ov, svg: ov.querySelector('#seSvg'), title: ov.querySelector('#seTitle'), field: ov.querySelector('#seField'),
+    grid: ov.querySelector('#seGrid'), undoBtn: ov.querySelector('#seUndoBtn'), redoBtn: ov.querySelector('#seRedoBtn'),
+    palette: ov.querySelector('#sePalette'), labelBlock: ov.querySelector('#seLabelBlock'), labelTitle: ov.querySelector('#seLabelTitle'),
+    label: ov.querySelector('#seLabel'), dashBlock: ov.querySelector('#seDashBlock'), dash: ov.querySelector('#seDash'),
+    delBlock: ov.querySelector('#seDelBlock'), hint: ov.querySelector('#seHint'), tools: ov.querySelector('#seTools')
+  });
+
+  seEl.title.addEventListener('input', () => { ed.schema.titre = seEl.title.value; });
+  seEl.field.addEventListener('change', () => { sePushUndo(); ed.schema.field = seEl.field.value; seSync(); });
+  seEl.grid.addEventListener('change', () => { sePushUndo(); ed.schema.grid = seEl.grid.checked; seRedraw(); });
+  seEl.undoBtn.addEventListener('click', seUndo);
+  seEl.redoBtn.addEventListener('click', seRedo);
+  ov.querySelector('#seClearBtn').addEventListener('click', () => {
+    if(!ed.schema.elements.length) return;
+    if(confirm('Effacer tous les éléments de ce schéma ?')){ sePushUndo(); ed.schema.elements = []; ed.selId = null; seSync(); }
+  });
+  ov.querySelector('#seCancel').addEventListener('click', () => seClose(true));
+  ov.querySelector('#seSave').addEventListener('click', seSaveAndClose);
+  ov.querySelector('#seDelete').addEventListener('click', seDeleteSel);
+
+  seEl.tools.addEventListener('click', e => {
+    const b = e.target.closest('button[data-tool]'); if(!b) return;
+    seCleanup();
+    ed.tool = b.getAttribute('data-tool');
+    if(ed.tool !== 'select'){ ed.selId = null; ed.color = SE_DEFAULT_COLOR[ed.tool]; }
+    seSync();
+  });
+  seEl.palette.addEventListener('click', e => {
+    const b = e.target.closest('button[data-c]'); if(!b) return;
+    ed.color = b.getAttribute('data-c');
+    const el = seSel();
+    if(el && el.t !== 'ball'){ sePushUndo(); el.c = ed.color; }
+    seSync();
+  });
+  seEl.label.addEventListener('focus', () => { ed.labelSnap = seSnap(); ed.labelPushed = false; });
+  seEl.label.addEventListener('input', () => {
+    const el = seSel(); if(!el) return;
+    if(!ed.labelPushed){ sePushUndo(ed.labelSnap); ed.labelPushed = true; }
+    if(el.t === 'text') el.text = seEl.label.value; else if(el.t === 'player') el.label = seEl.label.value;
+    seRedraw();
+  });
+  seEl.dash.addEventListener('change', () => { const el = seSel(); if(!el) return; sePushUndo(); el.dash = seEl.dash.checked; seRedraw(); });
+
+  seEl.svg.addEventListener('pointerdown', sePointerDown);
+  seEl.svg.addEventListener('pointermove', sePointerMove);
+  seEl.svg.addEventListener('pointerup', sePointerUp);
+  seEl.svg.addEventListener('pointercancel', sePointerUp);
+
+  document.addEventListener('keydown', e => {
+    if(!ed.open) return;
+    const tag = (e.target.tagName || '').toLowerCase();
+    const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+    const k = (e.key || '').toLowerCase();
+    if((e.ctrlKey || e.metaKey) && k === 'z'){ e.preventDefault(); e.shiftKey ? seRedo() : seUndo(); return; }
+    if((e.ctrlKey || e.metaKey) && k === 'y'){ e.preventDefault(); seRedo(); return; }
+    if(typing){ if(k === 'escape') e.target.blur(); return; }
+    if((k === 'delete' || k === 'backspace') && ed.selId){ e.preventDefault(); seDeleteSel(); }
+    else if(k === 'escape'){ seCleanup(); ed.selId = null; seSync(); }
+  });
+  ed.built = true;
+}
+
+function sePointerDown(e){
+  if(e.pointerType === 'mouse' && e.button > 0) return;
+  e.preventDefault();
+  if(document.activeElement === seEl.label) seEl.label.blur();
+  const raw = seToSvg(e);
+  const capture = () => { try{ if(seEl.svg.setPointerCapture && e.pointerId !== undefined) seEl.svg.setPointerCapture(e.pointerId); }catch(_){} };
+  const handle = e.target.closest ? e.target.closest('[data-handle]') : null;
+  if(handle && seSel()){
+    ed.drag = { mode:'handle', end:handle.getAttribute('data-handle'), snapshot:seSnap(), pushed:false };
+    capture(); return;
+  }
+  if(ed.tool === 'select'){
+    const g = e.target.closest ? e.target.closest('[data-id]') : null;
+    const prev = ed.selId;
+    if(g){
+      ed.selId = g.getAttribute('data-id');
+      const el = seSel();
+      if(el.c && el.t !== 'ball') ed.color = el.c;
+      ed.drag = { mode:'move', startRaw:raw, orig:JSON.parse(JSON.stringify(el)), snapshot:seSnap(), pushed:false, moved:false };
+      capture();
+    } else { ed.selId = null; }
+    if(prev && prev !== ed.selId) seCleanup();
+    seSync();
+    return;
+  }
+  const p = seSnapPt(raw), before = seSnap();
+  if(ed.tool === 'arrow' || ed.tool === 'pass' || ed.tool === 'line'){
+    const el = { id:uid('e'), t: ed.tool === 'line' ? 'line' : 'arrow', x1:p.x, y1:p.y, x2:p.x, y2:p.y, c:ed.color, dash: ed.tool === 'pass' };
+    ed.schema.elements.push(el); ed.selId = el.id;
+    ed.drag = { mode:'create', snapshot:before };
+    capture(); seRedraw(); return;
+  }
+  sePushUndo(before);
+  let el;
+  if(ed.tool === 'text') el = { id:uid('e'), t:'text', x:p.x, y:p.y, text:'10 m', c:ed.color };
+  else if(ed.tool === 'cone') el = { id:uid('e'), t:'cone', x:p.x, y:p.y, c:ed.color };
+  else if(ed.tool === 'player'){
+    const n = ed.schema.elements.filter(x => x.t === 'player' && x.c === ed.color).length + 1;
+    el = { id:uid('e'), t:'player', x:p.x, y:p.y, label:String(n), c:ed.color };
+  } else el = { id:uid('e'), t:'ball', x:p.x, y:p.y };
+  ed.schema.elements.push(el); ed.selId = el.id;
+  seSync();
+  if(el.t === 'text'){ setTimeout(() => { seEl.label.focus(); seEl.label.select(); }, 0); }
+}
+
+function sePointerMove(e){
+  const d = ed.drag, el = seSel();
+  if(!d || !el) return;
+  const raw = seToSvg(e), f = seField();
+  if(d.mode === 'create'){
+    const p = seSnapPt(raw); el.x2 = p.x; el.y2 = p.y;
+  } else if(d.mode === 'handle'){
+    const p = seSnapPt(raw);
+    const k = d.end === '1' ? ['x1','y1'] : ['x2','y2'];
+    if(el[k[0]] === p.x && el[k[1]] === p.y) return;
+    if(!d.pushed){ sePushUndo(d.snapshot); d.pushed = true; }
+    el[k[0]] = p.x; el[k[1]] = p.y;
+  } else if(d.mode === 'move'){
+    let dx = raw.x - d.startRaw.x, dy = raw.y - d.startRaw.y;
+    if(!d.moved && Math.hypot(dx, dy) < 0.4) return;
+    d.moved = true;
+    if(!d.pushed){ sePushUndo(d.snapshot); d.pushed = true; }
+    if(el.x1 !== undefined){
+      const o = d.orig;
+      dx = Math.min(Math.max(dx, -Math.min(o.x1, o.x2)), f.w - Math.max(o.x1, o.x2));
+      dy = Math.min(Math.max(dy, -Math.min(o.y1, o.y2)), f.h - Math.max(o.y1, o.y2));
+      const nx = seSnapN(o.x1 + dx, f.w), ny = seSnapN(o.y1 + dy, f.h);
+      el.x1 = nx; el.y1 = ny; el.x2 = o.x2 + (nx - o.x1); el.y2 = o.y2 + (ny - o.y1);
+    } else {
+      el.x = seSnapN(d.orig.x + dx, f.w); el.y = seSnapN(d.orig.y + dy, f.h);
+    }
+  }
+  seRedraw();
+}
+
+function sePointerUp(){
+  const d = ed.drag; if(!d) return;
+  ed.drag = null;
+  if(d.mode === 'create'){
+    const el = seSel();
+    if(el){
+      if(Math.hypot(el.x2 - el.x1, el.y2 - el.y1) < 1.5){ ed.schema.elements = ed.schema.elements.filter(x => x !== el); ed.selId = null; }
+      else sePushUndo(d.snapshot);
+    }
+  }
+  seSync();
+}
+
+function seDeleteSel(){
+  const el = seSel(); if(!el) return;
+  sePushUndo();
+  ed.schema.elements = ed.schema.elements.filter(x => x !== el);
+  ed.selId = null; seSync();
+}
+
+function seSelectionSVG(){
+  const el = seSel(); if(!el) return '';
+  const S = seField().s, C = '#00e5ff';
+  if(el.t === 'arrow' || el.t === 'line'){
+    return `<g pointer-events="none"><line x1="${el.x1}" y1="${el.y1}" x2="${el.x2}" y2="${el.y2}" stroke="${C}" stroke-width="${sr(0.2 * S)}" stroke-dasharray="${sr(0.8 * S)} ${sr(0.6 * S)}"/></g>` +
+      [['1', el.x1, el.y1], ['2', el.x2, el.y2]].map(h =>
+        `<circle data-handle="${h[0]}" cx="${h[1]}" cy="${h[2]}" r="${sr(1.25 * S)}" fill="#fff" stroke="${C}" stroke-width="${sr(0.32 * S)}" style="cursor:grab"/>`).join('');
+  }
+  if(el.t === 'text'){
+    const w = Math.max(3 * S, String(el.text || '').length * 2.8 * S * 0.6 + 1.4 * S), h = 2.8 * S * 1.6;
+    return `<rect pointer-events="none" x="${sr(el.x - w / 2)}" y="${sr(el.y - h / 2)}" width="${sr(w)}" height="${sr(h)}" fill="none" stroke="${C}" stroke-width="${sr(0.22 * S)}" stroke-dasharray="${sr(0.8 * S)} ${sr(0.6 * S)}"/>`;
+  }
+  return `<circle pointer-events="none" cx="${el.x}" cy="${el.y}" r="${sr(2.9 * S)}" fill="none" stroke="${C}" stroke-width="${sr(0.22 * S)}" stroke-dasharray="${sr(0.8 * S)} ${sr(0.6 * S)}"/>`;
+}
+
+function seRedraw(){
+  const f = seField(), svg = seEl.svg;
+  svg.setAttribute('viewBox', `0 0 ${f.w} ${f.h}`);
+  svg.style.setProperty('--ar', String(f.w / f.h));
+  svg.innerHTML = schemaFieldSVG(ed.schema.field, ed.schema.grid) + schemaElementsSVG(ed.schema.elements, f.s) + seSelectionSVG();
+}
+
+function seSync(){
+  const sc = ed.schema, el = seSel();
+  if(el && el.c && el.t !== 'ball') ed.color = el.c;
+  seEl.title.value = sc.titre || '';
+  seEl.field.value = sc.field;
+  seEl.grid.checked = !!sc.grid;
+  seEl.tools.querySelectorAll('.se-tool').forEach(b => b.classList.toggle('active', b.getAttribute('data-tool') === ed.tool));
+  seEl.palette.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.getAttribute('data-c') === ed.color));
+  const hasLabel = !!el && (el.t === 'text' || el.t === 'player');
+  seEl.labelBlock.classList.toggle('hidden', !hasLabel);
+  if(hasLabel){
+    seEl.labelTitle.textContent = el.t === 'text' ? 'Texte' : 'Numéro ou lettre';
+    seEl.label.maxLength = el.t === 'text' ? 40 : 3;
+    seEl.label.value = el.t === 'text' ? (el.text || '') : (el.label || '');
+  }
+  seEl.dashBlock.classList.toggle('hidden', !(el && (el.t === 'arrow' || el.t === 'line')));
+  if(el && el.dash !== undefined) seEl.dash.checked = !!el.dash;
+  seEl.delBlock.classList.toggle('hidden', !el);
+  seEl.undoBtn.disabled = !ed.undo.length;
+  seEl.redoBtn.disabled = !ed.redo.length;
+  const tool = SE_TOOLS.find(t => t.id === ed.tool);
+  seEl.hint.textContent = tool ? tool.hint : '';
+  seRedraw();
+}
+
+function seClose(askIfDirty){
+  if(askIfDirty && seDirtyKey() !== ed.initial && !confirm('Abandonner les modifications de ce schéma ?')) return;
+  ed.open = false; ed.drag = null;
+  seEl.ov.classList.add('hidden');
+}
+function seSaveAndClose(){
+  seCleanup();
+  const out = JSON.parse(JSON.stringify(ed.schema));
+  const cb = ed.onSave;
+  seClose(false);
+  if(cb) cb(out);
+}
+
+// Ouvre l'éditeur sur un schéma existant (ou un nouveau) ; onSave reçoit la copie modifiée.
+function openSchemaEditor(schema, onSave){
+  if(!ed.built) seBuild();
+  ed.schema = schema ? JSON.parse(JSON.stringify(schema)) : { id: uid('sc'), titre:'', field:'full', grid:false, elements:[] };
+  ed.schema.elements = ed.schema.elements || [];
+  ed.onSave = onSave; ed.tool = 'select'; ed.color = '#ffffff'; ed.selId = null; ed.undo = []; ed.redo = []; ed.drag = null;
+  ed.initial = seDirtyKey();
+  ed.open = true;
+  seEl.ov.classList.remove('hidden');
+  seSync();
+}
+// <<< SCHEMA_EDITOR
+
 // ===================== MODAL PROFIL =====================
 function openProfileModal(id){
   editingProfileId = id;
@@ -722,6 +1297,34 @@ document.getElementById('profileSave').addEventListener('click', () => {
 });
 
 // ===================== MODAL SEANCE =====================
+let schemaDraft = [];
+function renderSchemaList(){
+  const box = document.getElementById('schemaList');
+  if(!schemaDraft.length){
+    box.innerHTML = '<div class="schema-empty">Aucun schéma. Les joueurs verront ceux que tu ajoutes ici en ouvrant leur séance.</div>';
+    return;
+  }
+  box.innerHTML = '';
+  schemaDraft.forEach((sc, i) => {
+    const item = document.createElement('div');
+    item.className = 'schema-item';
+    item.innerHTML = `
+      <div class="schema-prev">${renderSchemaSVG(sc)}</div>
+      <div class="schema-meta">
+        <div class="schema-name">${esc(sc.titre || ('Schéma ' + (i + 1)))}</div>
+        <div class="schema-sub">${esc((SCHEMA_FIELDS[sc.field] || SCHEMA_FIELDS.full).label)} · ${(sc.elements || []).length} élément${(sc.elements || []).length > 1 ? 's' : ''}</div>
+        <div class="schema-actions">
+          <button type="button" class="btn-text sc-edit">Modifier</button>
+          <button type="button" class="btn-text sc-del">Supprimer</button>
+        </div>
+      </div>`;
+    item.querySelector('.sc-edit').addEventListener('click', () => openSchemaEditor(sc, out => { schemaDraft[i] = out; renderSchemaList(); }));
+    item.querySelector('.sc-del').addEventListener('click', () => { if(confirm('Supprimer ce schéma ?')){ schemaDraft.splice(i, 1); renderSchemaList(); } });
+    box.appendChild(item);
+  });
+}
+document.getElementById('addSchemaBtn').addEventListener('click', () => openSchemaEditor(null, out => { schemaDraft.push(out); renderSchemaList(); }));
+
 function openSeanceModal(id){
   editingSeanceId = id;
   const modal = document.getElementById('seanceModal');
@@ -735,6 +1338,7 @@ function openSeanceModal(id){
     document.getElementById('scType').value = s.type;
     document.getElementById('scObjectif').value = s.objectif || '';
     exoDraft = s.exercices.map(e => ({...e}));
+    schemaDraft = (s.schemas || []).map(x => JSON.parse(JSON.stringify(x)));
   } else {
     document.getElementById('seanceModalTitle').textContent = 'Nouvelle séance';
     document.getElementById('scTitre').value = '';
@@ -743,8 +1347,10 @@ function openSeanceModal(id){
     document.getElementById('scType').value = 'Terrain';
     document.getElementById('scObjectif').value = '';
     exoDraft = [{id:uid('e'), nom:'', series:'', reps:'', consigne:'', superset:false}];
+    schemaDraft = [];
   }
   renderExoEditor();
+  renderSchemaList();
   modal.classList.remove('hidden');
 }
 document.getElementById('seanceCancel').addEventListener('click', () => document.getElementById('seanceModal').classList.add('hidden'));
@@ -801,14 +1407,14 @@ document.getElementById('seanceSave').addEventListener('click', () => {
   const heure = document.getElementById('scHeure').value;
   const type = document.getElementById('scType').value;
   const objectif = document.getElementById('scObjectif').value.trim();
-  const exercices = exoDraft.filter(e => e.nom.trim() !== '');
+  const exercices = exoDraft.filter(e => e.nom.trim() !== '').map(e => ({...e, volume: fmtVolume(e)}));
 
   const profile = currentProfile();
   if(editingSeanceId){
     const s = profile.seances.find(x => x.id === editingSeanceId);
-    Object.assign(s, {titre, date, heure, type, objectif, exercices});
+    Object.assign(s, {titre, date, heure, type, objectif, exercices, schemas: schemaDraft});
   } else {
-    profile.seances.push({id:uid('s'), titre, date, heure, type, objectif, exercices});
+    profile.seances.push({id:uid('s'), titre, date, heure, type, objectif, exercices, schemas: schemaDraft});
   }
   document.getElementById('seanceModal').classList.add('hidden');
   renderAll();

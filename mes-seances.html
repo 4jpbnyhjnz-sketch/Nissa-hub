@@ -130,6 +130,29 @@
   .log-edit-btn{background:none; color:var(--pierre); font-size:0.8rem; font-weight:600; padding:4px 8px;}
   .log-edit-btn:active{color:var(--rouge);}
   .log-rpe-badge{display:inline-block; margin-top:4px; background:var(--rouge); color:var(--blanc); font-weight:700; font-size:0.78rem; padding:4px 10px; border-radius:var(--radius);}
+/* >>> SCHEMA_CSS */
+  /* SCHEMAS : miniatures + visionneuse */
+  .schema-label{font-size:0.78rem; font-weight:600; color:var(--pierre); margin:0 0 8px;}
+  .schema-strip{display:flex; flex-wrap:wrap; gap:10px; margin:0 0 14px;}
+  .schema-thumb{width:150px; background:var(--blanc); border:1px solid var(--border); padding:6px; text-align:left; cursor:pointer; font-family:inherit;}
+  .schema-thumb:hover, .schema-thumb:active{border-color:var(--rouge);}
+  .schema-thumb svg{display:block; width:100%; height:auto; border-radius:2px;}
+  .schema-thumb span{display:block; margin-top:6px; font-size:0.74rem; font-weight:600; color:var(--noir); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sv-overlay{position:fixed; inset:0; z-index:300; background:rgba(14,12,9,0.97); display:flex; flex-direction:column; color:var(--blanc);}
+  .sv-bar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:3px solid var(--rouge);}
+  .sv-title{font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:0.95rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sv-tools{display:flex; gap:8px; flex-shrink:0;}
+  .sv-tools button{background:#2a241c; color:var(--blanc); min-width:40px; height:36px; padding:0 12px; font-weight:700; font-size:1rem; border-radius:var(--radius);}
+  .sv-tools button.sv-close{background:var(--rouge); font-size:0.85rem;}
+  .sv-tabs{display:flex; gap:8px; padding:10px 16px 0; overflow-x:auto;}
+  .sv-tabs button{background:none; color:var(--pierre); padding:6px 12px; font-size:0.82rem; font-weight:600; border:1px solid #3a332a; border-radius:var(--radius); white-space:nowrap;}
+  .sv-tabs button.active{color:var(--blanc); border-color:var(--rouge);}
+  .sv-scroll{flex:1; overflow:auto; padding:14px 16px; -webkit-overflow-scrolling:touch;}
+  .sv-inner{margin:0 auto;}
+  .sv-inner svg{display:block; width:100%; height:auto; border-radius:3px;}
+  .sv-hint{padding:8px 16px 12px; font-size:0.76rem; color:var(--pierre); text-align:center;}
+/* <<< SCHEMA_CSS */
+
 </style>
 </head>
 <body>
@@ -214,6 +237,188 @@ function fmtVolume(v){
 }
 function exKey(ex, i){ return ex.id || ('i' + i); }
 
+// >>> SCHEMA_LIB
+// ===================== SCHEMAS : RENDU PARTAGÉ (admin + joueurs) =====================
+const SCHEMA_FIELDS = {
+  full:   { label:'Terrain complet', w:120, h:70, s:1 },
+  half:   { label:'Demi-terrain',    w:62,  h:70, s:0.9 },
+  square: { label:'Carré vert',      w:40,  h:40, s:0.75 }
+};
+const SCHEMA_COLORS = [
+  {c:'#ffffff', n:'Blanc'}, {c:'#ffd400', n:'Jaune'}, {c:'#ff9f1a', n:'Orange'},
+  {c:'#e53935', n:'Rouge'}, {c:'#1e88e5', n:'Bleu'},  {c:'#111111', n:'Noir'}
+];
+function sr(v){ return Math.round(v * 100) / 100; }
+function snum(v){ const n = Number(v); return isFinite(n) ? n : 0; }
+function schemaColor(c, fallback){ return /^#[0-9a-fA-F]{6}$/.test(String(c)) ? String(c) : fallback; }
+function schemaLum(hex){
+  const h = hex.replace('#','');
+  return (0.299*parseInt(h.slice(0,2),16) + 0.587*parseInt(h.slice(2,4),16) + 0.114*parseInt(h.slice(4,6),16)) / 255;
+}
+
+function schemaGridSVG(w, h){
+  let g = '<g stroke="#fff" stroke-width="0.12" opacity="0.4">';
+  for(let x = 5; x < w; x += 5) g += `<line x1="${x}" y1="0" x2="${x}" y2="${h}"/>`;
+  for(let y = 5; y < h; y += 5) g += `<line x1="0" y1="${y}" x2="${w}" y2="${y}"/>`;
+  return g + '</g>';
+}
+
+function schemaFieldSVG(field, grid){
+  if(field === 'square'){
+    let g = '<rect x="0" y="0" width="40" height="40" fill="#3f8a34"/>';
+    for(let i = 0; i < 8; i += 2) g += `<rect x="${i*5}" y="0" width="5" height="40" fill="#fff" opacity="0.045"/>`;
+    g += '<rect x="0.6" y="0.6" width="38.8" height="38.8" fill="none" stroke="#fff" stroke-width="0.35"/>';
+    if(grid) g += schemaGridSVG(40, 40);
+    return g;
+  }
+  let g = '<rect x="0" y="0" width="120" height="70" fill="#3f8a34"/>';
+  for(let x = 10; x < 110; x += 20) g += `<rect x="${x}" y="0" width="10" height="70" fill="#fff" opacity="0.045"/>`;
+  g += '<rect x="0" y="0" width="10" height="70" fill="#000" opacity="0.12"/><rect x="110" y="0" width="10" height="70" fill="#000" opacity="0.12"/>';
+  const L = 'stroke="#fff" stroke-width="0.35" fill="none"';
+  const D = 'stroke="#fff" stroke-width="0.3" stroke-dasharray="1.6 1.6" fill="none"';
+  g += `<rect x="0.18" y="0.18" width="119.64" height="69.64" ${L}/>`;
+  [10, 32, 60, 88, 110].forEach(x => { g += `<line x1="${x}" y1="0" x2="${x}" y2="70" ${L}/>`; });
+  [50, 70].forEach(x => { g += `<line x1="${x}" y1="0" x2="${x}" y2="70" ${D}/>`; });
+  [5, 15, 55, 65].forEach(y => { g += `<line x1="10" y1="${y}" x2="110" y2="${y}" ${D}/>`; });
+  [10, 110].forEach(x => {
+    g += `<line x1="${x}" y1="32.2" x2="${x}" y2="37.8" stroke="#fff" stroke-width="0.6"/>`;
+    g += `<circle cx="${x}" cy="32.2" r="0.5" fill="#fff"/><circle cx="${x}" cy="37.8" r="0.5" fill="#fff"/>`;
+  });
+  if(grid) g += schemaGridSVG(120, 70);
+  return g;
+}
+
+function schemaElementSVG(el, S){
+  const id = esc(el.id);
+  const x = snum(el.x), y = snum(el.y);
+  switch(el.t){
+    case 'arrow':
+    case 'line': {
+      const c = schemaColor(el.c, '#ffffff');
+      const x1 = snum(el.x1), y1 = snum(el.y1), x2 = snum(el.x2), y2 = snum(el.y2);
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 0.001;
+      const ux = dx / len, uy = dy / len;
+      const isArrow = el.t === 'arrow';
+      const hl = isArrow ? Math.min(2.8 * S, len * 0.7) : 0;
+      const hw = 1.9 * S;
+      const bx = x2 - ux * hl, by = y2 - uy * hl;
+      const dash = el.dash ? `stroke-dasharray="${sr(1.5 * S)} ${sr(1.1 * S)}"` : '';
+      const sw = 0.55 * S;
+      const pos = `x1="${sr(x1)}" y1="${sr(y1)}" x2="${sr(bx)}" y2="${sr(by)}"`;
+      let g = `<g data-id="${id}">`;
+      g += `<line x1="${sr(x1)}" y1="${sr(y1)}" x2="${sr(x2)}" y2="${sr(y2)}" stroke="transparent" stroke-width="${sr(3.4 * S)}" stroke-linecap="round"/>`;
+      g += `<line ${pos} stroke="#000" stroke-opacity="0.3" stroke-width="${sr(sw + 0.45 * S)}" ${dash}/>`;
+      g += `<line ${pos} stroke="${c}" stroke-width="${sr(sw)}" ${dash}/>`;
+      if(isArrow){
+        const px = -uy * hw / 2, py = ux * hw / 2;
+        g += `<polygon points="${sr(x2)},${sr(y2)} ${sr(bx + px)},${sr(by + py)} ${sr(bx - px)},${sr(by - py)}" fill="${c}" stroke="#000" stroke-opacity="0.3" stroke-width="${sr(0.25 * S)}" stroke-linejoin="round"/>`;
+      }
+      return g + '</g>';
+    }
+    case 'text': {
+      const c = schemaColor(el.c, '#ffffff');
+      const t = String(el.text ?? '').slice(0, 40);
+      const fs = 2.8 * S;
+      const w = Math.max(3 * S, t.length * fs * 0.6 + 1.4 * S);
+      const outline = schemaLum(c) < 0.45 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)';
+      const tx = `x="${sr(x)}" y="${sr(y)}" dy=".35em" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-size="${sr(fs)}" font-weight="800"`;
+      return `<g data-id="${id}"><rect x="${sr(x - w / 2)}" y="${sr(y - fs * 0.8)}" width="${sr(w)}" height="${sr(fs * 1.6)}" fill="transparent"/>` +
+        `<text ${tx} fill="none" stroke="${outline}" stroke-width="${sr(0.7 * S)}" stroke-linejoin="round">${esc(t)}</text>` +
+        `<text ${tx} fill="${c}">${esc(t)}</text></g>`;
+    }
+    case 'cone': {
+      const c = schemaColor(el.c, '#ff9f1a');
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(2 * S)}" fill="transparent"/>` +
+        `<circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(1.05 * S)}" fill="${c}" stroke="rgba(0,0,0,0.45)" stroke-width="${sr(0.2 * S)}"/>` +
+        `<circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(0.45 * S)}" fill="rgba(255,255,255,0.75)"/></g>`;
+    }
+    case 'player': {
+      const c = schemaColor(el.c, '#e53935');
+      const label = String(el.label ?? '').slice(0, 3);
+      const light = schemaLum(c) > 0.62;
+      const fs = label.length > 1 ? 1.5 * S : 2.1 * S;
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(1.9 * S)}" fill="${c}" stroke="${light ? '#222' : '#fff'}" stroke-width="${sr(0.3 * S)}"/>` +
+        (label ? `<text x="${sr(x)}" y="${sr(y)}" dy=".35em" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-size="${sr(fs)}" font-weight="800" fill="${light ? '#111' : '#fff'}">${esc(label)}</text>` : '') + '</g>';
+    }
+    case 'ball':
+      return `<g data-id="${id}"><circle cx="${sr(x)}" cy="${sr(y)}" r="${sr(2 * S)}" fill="transparent"/>` +
+        `<g transform="rotate(-25 ${sr(x)} ${sr(y)})"><ellipse cx="${sr(x)}" cy="${sr(y)}" rx="${sr(1.5 * S)}" ry="${sr(0.95 * S)}" fill="#a0522d" stroke="#fff" stroke-width="${sr(0.2 * S)}"/>` +
+        `<line x1="${sr(x - 0.6 * S)}" y1="${sr(y)}" x2="${sr(x + 0.6 * S)}" y2="${sr(y)}" stroke="#fff" stroke-width="${sr(0.16 * S)}"/></g></g>`;
+    default:
+      return '';
+  }
+}
+// Ordre d'affichage : traits et flèches dessous, puis plots / joueurs / ballon, puis textes dessus.
+const SCHEMA_LAYER = { line:0, arrow:0, cone:1, ball:1, player:1, text:2 };
+function schemaElementsSVG(elements, S){
+  return (elements || []).map((el, i) => ({ el, i, l: SCHEMA_LAYER[el.t] ?? 1 }))
+    .sort((a, b) => a.l - b.l || a.i - b.i)
+    .map(x => schemaElementSVG(x.el, S)).join('');
+}
+
+function renderSchemaSVG(schema, opts){
+  const f = SCHEMA_FIELDS[schema.field] || SCHEMA_FIELDS.full;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f.w} ${f.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(schema.titre || 'Schéma')}">` +
+    schemaFieldSVG(schema.field, schema.grid) + schemaElementsSVG(schema.elements, f.s) + '</svg>';
+}
+
+// Visionneuse plein écran (zoom + / −), utilisée par le joueur et par le coach
+function openSchemaViewer(schemas, startIdx){
+  schemas = (schemas || []).filter(Boolean);
+  if(!schemas.length) return;
+  let cur = Math.min(Math.max(startIdx || 0, 0), schemas.length - 1);
+  const ZOOMS = [1, 1.5, 2, 3, 4];
+  let zi = 0;
+  const old = document.getElementById('schemaViewer');
+  if(old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'schemaViewer';
+  ov.className = 'sv-overlay';
+  document.body.appendChild(ov);
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  function close(){
+    document.removeEventListener('keydown', onKey);
+    document.body.style.overflow = prevOverflow;
+    ov.remove();
+  }
+  function onKey(e){ if(e.key === 'Escape') close(); }
+  function applyZoom(){
+    const inner = ov.querySelector('.sv-inner');
+    if(inner) inner.style.width = (ZOOMS[zi] * 100) + '%';
+  }
+  function paint(){
+    const sc = schemas[cur];
+    ov.innerHTML = `
+      <div class="sv-bar">
+        <div class="sv-title">${esc(sc.titre || ('Schéma ' + (cur + 1)))}</div>
+        <div class="sv-tools">
+          <button type="button" data-a="out" aria-label="Dézoomer">−</button>
+          <button type="button" data-a="in" aria-label="Zoomer">+</button>
+          <button type="button" data-a="close" class="sv-close">Fermer</button>
+        </div>
+      </div>
+      ${schemas.length > 1 ? `<div class="sv-tabs">${schemas.map((x, i) =>
+        `<button type="button" data-a="tab" data-i="${i}" class="${i === cur ? 'active' : ''}">${esc(x.titre || ('Schéma ' + (i + 1)))}</button>`).join('')}</div>` : ''}
+      <div class="sv-scroll"><div class="sv-inner">${renderSchemaSVG(sc)}</div></div>
+      <div class="sv-hint">Utilise + / − pour zoomer et fais glisser pour te déplacer.</div>`;
+    applyZoom();
+  }
+  ov.addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]');
+    if(!b) return;
+    const a = b.getAttribute('data-a');
+    if(a === 'close') close();
+    else if(a === 'in'){ zi = Math.min(zi + 1, ZOOMS.length - 1); applyZoom(); }
+    else if(a === 'out'){ zi = Math.max(zi - 1, 0); applyZoom(); }
+    else if(a === 'tab'){ cur = parseInt(b.getAttribute('data-i'), 10) || 0; zi = 0; paint(); }
+  });
+  document.addEventListener('keydown', onKey);
+  paint();
+}
+// <<< SCHEMA_LIB
+
 function fmtDate(iso){
   const d = new Date(iso+'T00:00:00');
   return d.toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'short'});
@@ -285,6 +490,10 @@ function renderProfile(){
 }
 
 function buildSeanceCard(s, p){
+  const schemaStrip = (s.schemas && s.schemas.length)
+    ? `<div class="schema-label">Schémas — touche pour agrandir</div><div class="schema-strip">${s.schemas.map((sc, i) =>
+        `<button type="button" class="schema-thumb" data-si="${i}">${renderSchemaSVG(sc)}<span>${esc(sc.titre || ('Schéma ' + (i + 1)))}</span></button>`).join('')}</div>`
+    : '';
   const card = document.createElement('div');
   card.className = 'seance-card';
   card.innerHTML = `
@@ -299,11 +508,13 @@ function buildSeanceCard(s, p){
       </div>
       <div class="seance-detail">
         <div class="objectif">${esc(s.objectif) || 'Aucun objectif renseigné.'}</div>
+        ${schemaStrip}
         <div class="log-container"></div>
       </div>
     </div>
   `;
   card.querySelector('.seance-card-head').addEventListener('click', () => card.classList.toggle('open'));
+  card.querySelectorAll('.schema-thumb').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openSchemaViewer(s.schemas, parseInt(b.getAttribute('data-si'), 10)); }));
   renderSeanceBody(card.querySelector('.log-container'), s, p, false);
   return card;
 }
